@@ -7,8 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		ABADF0E61732209100843E4D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = ABADF0E51732209100843E4D /* main.c */; };
+		AB051933173307B0007A725B /* main_parallel_synthesis.c in Sources */ = {isa = PBXBuildFile; fileRef = AB051932173307B0007A725B /* main_parallel_synthesis.c */; };
 		ABADF0E81732209100843E4D /* Shapelet0502.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABADF0E71732209100843E4D /* Shapelet0502.1 */; };
+		ABADF1011732274700843E4D /* parallel_compute.c in Sources */ = {isa = PBXBuildFile; fileRef = ABADF0FA1732274700843E4D /* parallel_compute.c */; };
+		ABADF1021732274700843E4D /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = ABADF0FC1732274700843E4D /* parser.c */; };
+		ABADF1031732274700843E4D /* PextractUShapelets.c in Sources */ = {isa = PBXBuildFile; fileRef = ABADF0FE1732274700843E4D /* PextractUShapelets.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,9 +28,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AB051932173307B0007A725B /* main_parallel_synthesis.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main_parallel_synthesis.c; sourceTree = "<group>"; };
 		ABADF0E21732209100843E4D /* Shapelet0502 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Shapelet0502; sourceTree = BUILT_PRODUCTS_DIR; };
-		ABADF0E51732209100843E4D /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		ABADF0E71732209100843E4D /* Shapelet0502.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Shapelet0502.1; sourceTree = "<group>"; };
+		ABADF0FA1732274700843E4D /* parallel_compute.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parallel_compute.c; sourceTree = "<group>"; };
+		ABADF0FB1732274700843E4D /* parallel_compute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parallel_compute.h; sourceTree = "<group>"; };
+		ABADF0FC1732274700843E4D /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = parser.c; sourceTree = "<group>"; };
+		ABADF0FD1732274700843E4D /* parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parser.h; sourceTree = "<group>"; };
+		ABADF0FE1732274700843E4D /* PextractUShapelets.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PextractUShapelets.c; sourceTree = "<group>"; };
+		ABADF0FF1732274700843E4D /* PextractUShapelets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PextractUShapelets.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,7 +69,13 @@
 		ABADF0E41732209100843E4D /* Shapelet0502 */ = {
 			isa = PBXGroup;
 			children = (
-				ABADF0E51732209100843E4D /* main.c */,
+				ABADF0FA1732274700843E4D /* parallel_compute.c */,
+				ABADF0FB1732274700843E4D /* parallel_compute.h */,
+				ABADF0FC1732274700843E4D /* parser.c */,
+				ABADF0FD1732274700843E4D /* parser.h */,
+				ABADF0FE1732274700843E4D /* PextractUShapelets.c */,
+				AB051932173307B0007A725B /* main_parallel_synthesis.c */,
+				ABADF0FF1732274700843E4D /* PextractUShapelets.h */,
 				ABADF0E71732209100843E4D /* Shapelet0502.1 */,
 			);
 			path = Shapelet0502;
@@ -117,7 +132,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ABADF0E61732209100843E4D /* main.c in Sources */,
+				ABADF1011732274700843E4D /* parallel_compute.c in Sources */,
+				ABADF1021732274700843E4D /* parser.c in Sources */,
+				ABADF1031732274700843E4D /* PextractUShapelets.c in Sources */,
+				AB051933173307B0007A725B /* main_parallel_synthesis.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +234,7 @@
 				ABADF0ED1732209100843E4D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
