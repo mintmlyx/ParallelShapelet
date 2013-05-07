@@ -11,12 +11,6 @@ void compute_mean_stddev(int *dataset_A, int dataset_Alen, double *dist, int new
 	double sum = 0.0, avg = 0.0, dev = 0.0;
 	int i;
     
-	//for(i=0 ; i<dataset_Alen; i++) printf("%d ", dataset_A[i]);
-    
-    //	printf("-----------%d ----------------\n\n", dataset_Alen);
-    
-	//for(i=0 ; i<newsize; i++) printf("%f ", dist[i]);
-	//printf("\n");
     
 	for(i = 0; i < dataset_Alen; i++) {
         
@@ -24,7 +18,6 @@ void compute_mean_stddev(int *dataset_A, int dataset_Alen, double *dist, int new
 		
 	}
     
-	//printf("sum is %f\n", sum);
     
 	avg = sum/dataset_Alen;
     
@@ -50,14 +43,11 @@ int max_index(double *gap, int total)
 {
 	int max = 0;
 	int i;
-	printf("Array is %d\n", total);
 	for(i=1; i< total; i++) {
-		printf("%f ", gap[i]);
 		if(CompareDoubles2(gap[max],  gap[i]) < 0) {
 			max = i;
 		}
 	}
-	printf("\n");
 	return max;
 }
 
@@ -70,7 +60,6 @@ void spawn_distance(int shapelet_row, int shapelet_col, int shapelet_len, int *o
     pthread_t  tid[newsize];
     
     int create_result = 1;
-    //	printf("nwsz %d shprow %d shpcol %d shplen %d \n", newsize, shapelet_row, shapelet_col, shapelet_len);
     for (int i=0; i<newsize; i++) {
         
         //initial the computeDistance_para
@@ -97,14 +86,12 @@ void spawn_distance(int shapelet_row, int shapelet_col, int shapelet_len, int *o
 		pthread_join(tid[i], NULL);
 	}
     
-	//printf("Finished joining\n");
 	int i= 0,j = 0;
 	for(; i<newsize; i++) {
         
 		dist[i] = param[i].distance;
 		/*If the computed distance is less than threshold then add to Dataset A*/
 		if (CompareDoubles2(dist[i], thresh) <= 0) {
-			printf("within %d thresh %2.3f %2.3f\n", i, thresh, dist[i]);
 			dataset_A[j] = i;
 			j++;
 		}
@@ -363,7 +350,7 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
         
 		int cluster_no = input_cluster_no;
         
-		printf("\nspawning thread subseq_row %d subseq idx %d cnt %d tslen %d subslen %d, iteration %d\n",subseq_row, k, cnt, ts_len, subseq_len[k], iter);
+		printf("\nspawning thread subseq_row %d subseq idx %d cnt %d tslen %d  iteration %d\n",subseq_row, k, cnt, ts_len, iter);
         
 		spawn_thread(subseq_len, ts, ts_len, subseq_row, newsize, old_id, dt, gap, cluster_no, subseq_col, p_subseq, ps_len, x);
         

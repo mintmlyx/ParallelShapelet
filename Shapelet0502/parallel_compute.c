@@ -314,7 +314,7 @@ void* findMaxGap(void* arg_para){
             printf("\ntmp_gap: %f VS maxGap: %f\n",tmp_gap,*(para->maxGap));
             
             //printf("\ntmp_gap: %f tmp_dist: %f +++++",tmp_gap, tmp_dist);
-            printf("\ncluster_a_mean: %f cluster_a_std: %f cluster_b_mean: %f cluster_b_std: %f",cluster_a_mean, cluster_a_std, cluster_b_mean, cluster_b_std);
+            printf("\ncluster_a_mean: %f cluster_a_std: %f cluster_b_mean: %f cluster_b_std: %f\n",cluster_a_mean, cluster_a_std, cluster_b_mean, cluster_b_std);
             for(int k=0;k<index_marker_len;k++){
                 //printf("\ndist: %f tmp_dist: %f marker: %d",distance_array[k] ,tmp_dist, data_cluster[k]);
             }
@@ -367,7 +367,6 @@ void* computeDistance(void* arg_para){
         //calculate the euclidean distance
         double dist = euclideanDistance(comp_normalized, shapelet_normalized, shapelet_len);
         
-        printf("Dist in computeDis: %f\n", dist);
         
         if( CompareDoubles2(dist,min_dist)<0){
             
@@ -375,7 +374,6 @@ void* computeDistance(void* arg_para){
             
         }
         
-   printf("Dist computeDis at data row %d datalen %d  i %d comparing to shapelet row %d col %d with shapeletlen %d: %f\n",data_row_id,data_len[data_row_id],i,shapelet_row_id,shapelet_col_start_id, shapelet_len, dist); 
         free(comp_normalized);
     }
     
@@ -390,8 +388,9 @@ double euclideanDistance(double* array1, double* array2, int len){
     
     double sum = 0.0;
     for (int i=0; i<len; i++) {
-        
+       
         sum = sum + pow((array1[i]-array2[i]), 2.0);
+
         
     }
     
@@ -405,36 +404,87 @@ double euclideanDistance(double* array1, double* array2, int len){
 //extract the data from the square map
 //the col_end id is inclusive
 double* zNormal(int row, int col_start, int col_end){
-    
-    //calc the mean
+//calc the mean
+
     double mean = 0.0;
+
     double std = 0.0;
+
     int array_len = col_end - col_start + 1;
+
     
+
     for(int i=col_start; i<=col_end; i++){
+
         
+
         mean += dataset[row][i];
+
         std += pow2map[row][i];
+
         
+
     }
+
     
+
     //normalize the mean
-    mean = mean / (double) array_len;
-    std = sqrt( (std / (double) array_len) - pow(mean , 2.0) );
+
+    	mean = mean / (double) array_len;
+
     
-    if(CompareDoubles2(std,0.0)==0){
-        std = 0.000001;
-    }
-    
+    	if(CompareDoubles2((std / (double) array_len) - pow(mean , 2.0) ,0.0) <= 0) {
+
+		std = 0.0;
+
+	} else {
+
+    	std = sqrt( (std / (double) array_len) - pow(mean , 2.0) );
+
+   	} 
+
     double* z_array = (double*) malloc(sizeof(double)*array_len);
+
     
-    for (int i=0; i<array_len; i++) {
+
+    if(CompareDoubles2(std,0.0)==0){
+
         
-        //calc the z-value
-        z_array[i] = (dataset[row][col_start+i] - mean)/std;
+
+        for (int i=0; i<array_len; i++) {
+
+            //calc the z-value
+
+            z_array[i] = 0.0;
+
+            
+
+        }
+
         
+
+    }else{
+
+    
+
+        for (int i=0; i<array_len; i++) {
+
+        
+
+            //calc the z-value
+
+            z_array[i] = (dataset[row][col_start+i] - mean)/std;
+
+	           
+
+        }
+
     }
+
     
+
     return z_array;
+
+    
     
 }
