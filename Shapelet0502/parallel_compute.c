@@ -122,7 +122,6 @@ void* computeGap(void* arg_para){
     double* dist_array = (double *)malloc(sizeof(double)*index_marker_len);
     //create thread result
     int create_result = 1;
-    
     //compute the distance array paralleled
     for (int i=0; i<index_marker_len; i++) {
         
@@ -376,6 +375,7 @@ void* computeDistance(void* arg_para){
             
         }
         
+   printf("Dist computeDis at data row %d datalen %d  i %d comparing to shapelet row %d col %d with shapeletlen %d: %f\n",data_row_id,data_len[data_row_id],i,shapelet_row_id,shapelet_col_start_id, shapelet_len, dist); 
         free(comp_normalized);
     }
     

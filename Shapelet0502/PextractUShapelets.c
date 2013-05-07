@@ -138,16 +138,16 @@ void* compute_gap_thread(void* arg)
 	double** p_subseq = param->p_subseq;
 	int * ps_len = param->ps_len;
     
-    printf("SEQUENTIAL cnt_indx/index %d to %d ts_len %d subseqlen %d  \n", cnt_indx, cnt_indx + ts_len-subseqlen+1, ts_len,subseqlen);
-	for(index=cnt_indx, i=0; index < cnt_indx + ts_len-subseqlen+1; index++, i++) {
+    	printf("SEQUENTIAL cnt_indx/index %d to %d ts_len %d subseqlen %d  \n", cnt_indx, cnt_indx + ts_len-subseqlen+1, ts_len,subseqlen);
+	for(index=cnt_indx, i=0; index < (cnt_indx + ts_len - subseqlen + 1); index++, i++) {
         
         
 		/*Compute the gap and threshold for each of the subsequence*/
         
-        struct computeGap_para para;
+		struct computeGap_para para;
         
 		p_subseq[index] = ts + i;
-        ps_len[index] = subseqlen;
+        	ps_len[index] = subseqlen;
         
         
 		subseq_col[index] = i;
@@ -155,17 +155,17 @@ void* compute_gap_thread(void* arg)
         //initialize parameter
 		para.threshold_dt = &dt[index];
 		para.threshold_maxGap = &gap[index];
-        para.cluster_no = cluster_no;
-        para.shapelet_row_id = subseq_row;
-        para.shapelet_col_start_id =  i;
-        para.shapelet_len = subseqlen;
-        para.index_marker = old_map;
-        para.index_marker_len = dataset_no;
+        	para.cluster_no = cluster_no;
+        	para.shapelet_row_id = subseq_row;
+        	para.shapelet_col_start_id =  i;
+        	para.shapelet_len = subseqlen;
+        	para.index_marker = old_map;
+        	para.index_marker_len = dataset_no;
         
-        printf("Start computeGap for index %d length %d i is %d\n", index, subseqlen, i);
-        computeGap((void*) &para);
+        	printf("Start computeGap for index %d length %d  scol %d srow %d dataset_no %d total %d ts_len %d cnt_indx %d \n", index, subseqlen, i, subseq_row, dataset_no, ts_len-subseqlen+1, ts_len, cnt_indx);
+        	computeGap((void*) &para);
         
-        printf("Computed gap is  %f dt %f index %d\n", gap[index], dt[index], index);
+        	printf("Computed gap is  %f dt %f index %d\n", gap[index], dt[index], index);
 	}
 	pthread_exit(NULL);
 }
@@ -182,32 +182,33 @@ void spawn_thread(int* subseqlen, double *ts,int ts_len, int subseq_row, int dat
 	
 	//printf("%d PARALLEL\n", x);
 	for(k=0 ; k<x; k++) {
-        //param.tid = tid;
-        param[k].subseqlen = subseqlen[k];
-        param[k].cnt_indx = cnt_indx;
-        param[k].ts = ts;
-        param[k].ts_len = ts_len;
-        param[k].subseq_row = subseq_row;
-        param[k].dataset_no = dataset_no;
-        param[k].old_map = old_map;
-        param[k].dt = dt;
-        param[k].gap = gap;
-        param[k].cluster_no = cluster_no;
-        param[k].subseq_col = subseq_col;
-        param[k].p_subseq =  p_subseq;
-        param[k].ps_len = ps_len;
+        	
+		//param.tid = tid;
+        	param[k].subseqlen = subseqlen[k];
+        	param[k].cnt_indx = cnt_indx;
+        	param[k].ts = ts;
+        	param[k].ts_len = ts_len;
+        	param[k].subseq_row = subseq_row;
+        	param[k].dataset_no = dataset_no;
+        	param[k].old_map = old_map;
+        	param[k].dt = dt;
+        	param[k].gap = gap;
+        	param[k].cluster_no = cluster_no;
+        	param[k].subseq_col = subseq_col;
+        	param[k].p_subseq =  p_subseq;
+        	param[k].ps_len = ps_len;
         
         
-        printf("\nspawning thread subseq idx %d cnt %d tslen %d subslen %d\n", k, cnt_indx, ts_len, subseqlen[k]);
-    	int ret = pthread_create(&tid[k], NULL, compute_gap_thread, (void*) &param[k]);
+        	printf("\nspawning thread subseq idx %d cnt %d subseqrow %d tslen %d subslen %d\n", k, cnt_indx,subseq_row, ts_len, subseqlen[k]);
+    		int ret = pthread_create(&tid[k], NULL, compute_gap_thread, (void*) &param[k]);
         
-        if(ret) {
+        	if(ret) {
             
-            printf("Pthread creation failed %d\n", ret);
-        }
+            		printf("Pthread creation failed %d\n", ret);
+        	}
         
-        prev = ts_len - subseqlen[k] +1;
-        cnt_indx += prev;
+        	prev = ts_len - subseqlen[k] +1;
+        	cnt_indx += prev;
 	}
     
     
@@ -258,21 +259,23 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 	
 	ts = pd_Dataset[start_ts_id];
 	ts_len = ds_len[start_ts_id];
+   
+	for(int i=0; i< n_sample; i++) 
+		printf("ds_len[%d] = %d \n", i, ds_len[i]); 
     
-    
-	printf("\nextractU_Shapelet\n");
+	printf("\nextractU_Shapelet %d\n", start_ts_id);
     
 	printf("result: %s\t%s\n",appname[start_ts_id],inputfiles[start_ts_id]);
 	//memset(dataset_A, -1, n_sample *sizeof(int));
 	memset(cluster_id, -1, n_sample *sizeof(int));
     
-	int subseq_row = 0;
+	int subseq_row = start_ts_id;
     
 	int total_subs = ((sLen + UPPER - sLen + LOWER) / STEP) +1;
-    int subseq_len[total_subs];
+    	int subseq_len[total_subs];
     
 	printf("TOTAL SUBS = %d \n", total_subs);
-    fprintf(fp, "\n\n\nNew Clustering Batch-------------\n");
+    	fprintf(fp, "\n\n\nNew Clustering Batch-------------\n");
     
 	while(1) {
 		
@@ -286,11 +289,11 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		for(x=0,sl=sLen-LOWER; sl <= sLen+UPPER && sl <=ts_len; sl+=STEP) {
             
 			if(sl <= ts_len) {
-                subseq_len[x] = sl;
-                printf("len is %d cnt is %d total till now is %d\n", sl, ts_len-sl, cnt);
-                //cnt += ts_len - subseq_len[x]+ 1;
-                cnt += ts_len - sl + 1;
-                ++x;
+                		subseq_len[x] = sl;
+         		        printf("len is %d cnt is %d total till now is %d\n", sl, ts_len-sl, cnt);
+		                //cnt += ts_len - subseq_len[x]+ 1;
+                		cnt += ts_len - sl + 1;
+                		++x;
 			}
 			else {
 				printf("Sl is %d ts_len is %d\n", sl, ts_len);
@@ -298,6 +301,7 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		}
 		for(int u=0; u<x; u++)
 			printf("len is %d \n", subseq_len[u]);
+
 		printf("TOTAL SUBS = %d \n", x);
 		//printf("CNT is %d\n", cnt);
 		double* p_subseq[cnt];
@@ -342,22 +346,24 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		/*index of the distance  within threshold*/
 		int dataset_A[newsize];
 		int dataset_Alen;
-        
+       
+		printf("NEW SIZE is %d , J is %d\n", newsize, j); 
+		for(int z= 0 ; z<j; z++) printf("old_id[%d] = %d \n",z, old_id[z]);
         
 		memset(dataset_A, -1, newsize *sizeof(int));
         
 		/*********VERIFY*******/
-        
-		if(ts_len < sLen) {
+       
+/*		if(ts_len < sLen) {
 			
 			printf(" The time series is too short to classify\n");
 			
 			break; // break?
-		}
+		}*/
         
 		int cluster_no = input_cluster_no;
         
-		//printf("\nspawning thread subseq idx %d cnt %d tslen %d subslen %d\n", k, cnt, ts_len, subseq_len[k]);
+		printf("\nspawning thread subseq_row %d subseq idx %d cnt %d tslen %d subslen %d, iteration %d\n",subseq_row, k, cnt, ts_len, subseq_len[k], iter);
         
 		spawn_thread(subseq_len, ts, ts_len, subseq_row, newsize, old_id, dt, gap, cluster_no, subseq_col, p_subseq, ps_len, x);
         
@@ -365,18 +371,18 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		/*Find the subsequence which gives the maximum gap for the dataset*/
 		printf("\nComputing max gap index\n");
         
-        for (int y=0; y<cnt; y++) {
-            printf("%f \n",gap[y]);
-        }
+      		for (int y=0; y<cnt; y++) {
+		            printf("%f \n",gap[y]);
+       		 }
         
 		index = max_index(gap, cnt);
         
         
 		/*Add the discriminatory subsequence to the ushapelet list*/
         
-        printf("Discovered ushapelet gap is %2.2f dt is %2.2f index %d oldrow %d col %d len %d\n", \
-               gap[index], dt[index], index, subseq_row, \
-               subseq_col[index], ps_len[index]);
+        	printf("Discovered ushapelet gap is %2.2f dt is %2.2f index %d oldrow %d col %d len %d\n", \
+			gap[index], dt[index], index, subseq_row, \
+               		subseq_col[index], ps_len[index]);
         
 		ushapelet[iter] = p_subseq[index];
 		ushapelet_len[iter] = ps_len[index];
@@ -402,10 +408,11 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 			/*Find the dataset far away from the ushapelet*/
 			index2 = max_index(dist, newsize);
 			ts = n_dataset[index2];
-            
+			ts_len = n_datalen[index2];
+
 			subseq_row = old_id[index2];
             
-			printf("Finding next data set is at  %d %d\n", index2, subseq_row);
+			printf("Finding next data set is at  index2%d subseqrow%d oldts_len %d ts_len %d\n", index2, subseq_row,ds_len[subseq_row], ts_len );
             
             
 			mean = 0.0;
