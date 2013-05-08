@@ -311,10 +311,8 @@ void* findMaxThread(void *args) {
                 findMaxGap_para_array[i].cluster_no = cluster_no;
                 findMaxGap_para_array[i].cluster_dis = (para->distarray[j]+para->distarray[j+1])/2.0;
                 findMaxGap_para_array[i].index_marker_len = index_marker_len;
-                findMaxGap_para_array[i].maxGap = threadArg->maxGap; //para->threshold_maxGap;
-                findMaxGap_para_array[i].dt = threadArg->dt; //para->threshold_dt;
-                //findMaxGap_para_array[i].maxGap = para->threshold_maxGap;
-                //findMaxGap_para_array[i].dt = para->threshold_dt;
+                findMaxGap_para_array[i].maxGap = para->threshold_maxGap;
+                findMaxGap_para_array[i].dt = para->threshold_dt;
                 findMaxGap_para_array[i].lock = threadArg->lock;
         
                 findMaxGap((void*) &findMaxGap_para_array[i]);
@@ -329,8 +327,6 @@ void* computeGap(void* arg_para){
     
     	struct computeGap_para* para = (struct computeGap_para*) arg_para;
     	int cluster_no = para->cluster_no;
-    	double* threshold_dt = para->threshold_dt;
-    	double* threshold_maxGap = para->threshold_maxGap;
 
     	int index_marker_len = para->index_marker_len;
 
@@ -379,8 +375,6 @@ void* computeGap(void* arg_para){
     	qsort(dist_array, index_marker_len, sizeof(double), compare);
 	
     
-    	double maxGap = 0.0;
-    	double dt = 0.0;
     
     	//set paramter array
     	struct findMaxGap_para* findMaxGap_para_array = (struct findMaxGap_para*) malloc(sizeof(struct findMaxGap_para)*index_marker_len);
@@ -401,9 +395,6 @@ void* computeGap(void* arg_para){
 		threadArg[i].count = ((bfactor < remainder) ? bfactor : remainder);
 		threadArg[i].data = arg_para;
 		threadArg[i].lock = &lock;
-
-		threadArg[i].maxGap = &maxGap;
-		threadArg[i].dt = &dt;
 
 		create_result = pthread_create(&idThread[i], NULL, findMaxThread, &threadArg[i]);
 
@@ -428,10 +419,6 @@ void* computeGap(void* arg_para){
         
     	}
    
-    	//write the output
-    	*threshold_dt = dt;
-    	*threshold_maxGap = maxGap;
-
     
     	free(findMaxGap_para_array);
     	free(dist_array);

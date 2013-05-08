@@ -88,6 +88,8 @@ void* compute_gap_thread(void* arg)
         
         
 		subseq_col[index] = i;
+		dt[index] = 0.0;
+		gap[index] = 0.0;
         
         //initialize parameter
 		para[i].threshold_dt = &dt[index];

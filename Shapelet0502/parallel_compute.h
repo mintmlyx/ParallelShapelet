@@ -65,8 +65,6 @@ typedef struct {
         int start;
         int count;
         void *data;
-        double *maxGap;
-        double *dt;
         pthread_mutex_t* lock;
 } threadInfo;
 
