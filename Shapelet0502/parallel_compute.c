@@ -10,7 +10,14 @@
 #include<string.h>
 #include <errno.h>
 #include "parallel_compute.h"
+int bfactor = 7;
+typedef struct {
 
+	int start;
+	int count;
+} threadInfo;
+
+//paralleled--------------------------------------------------------------------
 int compare (const void * a, const void * b)
 {
     return CompareDoubles2(*(double*) a,*(double*)b);
@@ -28,76 +35,258 @@ int CompareDoubles2(double A, double B){
     
 }
 
+int computeSquare8(double *input, double *output)
+{
 
-void* calcPow2_row(void* id){
-    
-    int row_id;
-    row_id = *((int*) id);
-    
-    for (int i=0; i<data_len[row_id]; i++) {
+	  __asm ( 	"mov  %0, %%rax;"
+	                "mov  %1, %%rdx;"
+                	"movupd 0x00(%%rax), %%xmm0;"
+                	"movupd 0x10(%%rax), %%xmm1;"
+                	"movupd 0x20(%%rax), %%xmm2;"
+                	"movupd 0x30(%%rax), %%xmm3;"
+                	"mulpd 0x00(%%rax), %%xmm0;"
+                	"mulpd 0x10(%%rax), %%xmm1;"
+                	"mulpd 0x20(%%rax), %%xmm2;"
+                	"mulpd 0x30(%%rax), %%xmm3;"
+                	"movupd %%xmm0, 0x00(%%rdx);"
+                	"movupd %%xmm1, 0x10(%%rdx);"
+                	"movupd %%xmm2, 0x20(%%rdx);"
+                	"movupd %%xmm3, 0x30(%%rdx);"
+                :
+                :"r"(input), "r"(output)
+                : "%rax","%rdx"
+        );
+
+}
+
+int computeSquare16(double *input, double *output)
+{
+
+	  __asm ( 	"mov  %0, %%rax;"
+	                "mov  %1, %%rdx;"
+                	"movupd 0x00(%%rax), %%xmm0;"
+                	"movupd 0x10(%%rax), %%xmm1;"
+                	"movupd 0x20(%%rax), %%xmm2;"
+                	"movupd 0x30(%%rax), %%xmm3;"
+                	"movupd 0x40(%%rax), %%xmm4;"
+                	"movupd 0x50(%%rax), %%xmm5;"
+                	"movupd 0x60(%%rax), %%xmm6;"
+                	"movupd 0x70(%%rax), %%xmm7;"
+                	"mulpd 0x00(%%rax), %%xmm0;"
+                	"mulpd 0x10(%%rax), %%xmm1;"
+                	"mulpd 0x20(%%rax), %%xmm2;"
+                	"mulpd 0x30(%%rax), %%xmm3;"
+                	"mulpd 0x40(%%rax), %%xmm4;"
+                	"mulpd 0x50(%%rax), %%xmm5;"
+                	"mulpd 0x60(%%rax), %%xmm6;"
+                	"mulpd 0x70(%%rax), %%xmm7;"
+                	"movupd %%xmm0, 0x00(%%rdx);"
+                	"movupd %%xmm1, 0x10(%%rdx);"
+                	"movupd %%xmm2, 0x20(%%rdx);"
+                	"movupd %%xmm3, 0x30(%%rdx);"
+                	"movupd %%xmm4, 0x40(%%rdx);"
+                	"movupd %%xmm5, 0x50(%%rdx);"
+                	"movupd %%xmm6, 0x60(%%rdx);"
+                	"movupd %%xmm7, 0x70(%%rdx);"
+		:
+                :"r"(input), "r"(output)
+                : "%rax","%rdx"
+        );
+}
+
+int computeSquare32(double *input, double *output)
+{
+
+	  __asm ( 	"mov  %0, %%rax;"
+	                "mov  %1, %%rdx;"
+                	"movupd 0x00(%%rax), %%xmm0;"
+                	"movupd 0x10(%%rax), %%xmm1;"
+                	"movupd 0x20(%%rax), %%xmm2;"
+                	"movupd 0x30(%%rax), %%xmm3;"
+                	"movupd 0x40(%%rax), %%xmm4;"
+                	"movupd 0x50(%%rax), %%xmm5;"
+                	"movupd 0x60(%%rax), %%xmm6;"
+                	"movupd 0x70(%%rax), %%xmm7;"
+                	"movupd 0x80(%%rax), %%xmm8;"
+                	"movupd 0x90(%%rax), %%xmm9;"
+                	"movupd 0xa0(%%rax), %%xmm10;"
+                	"movupd 0xb0(%%rax), %%xmm11;"
+                	"movupd 0xc0(%%rax), %%xmm12;"
+                	"movupd 0xd0(%%rax), %%xmm13;"
+                	"movupd 0xe0(%%rax), %%xmm14;"
+                	"movupd 0xf0(%%rax), %%xmm15;"
+                	"mulpd 0x00(%%rax), %%xmm0;"
+                	"mulpd 0x10(%%rax), %%xmm1;"
+                	"mulpd 0x20(%%rax), %%xmm2;"
+                	"mulpd 0x30(%%rax), %%xmm3;"
+                	"mulpd 0x40(%%rax), %%xmm4;"
+                	"mulpd 0x50(%%rax), %%xmm5;"
+                	"mulpd 0x60(%%rax), %%xmm6;"
+                	"mulpd 0x70(%%rax), %%xmm7;"
+                	"mulpd 0x80(%%rax), %%xmm8;"
+                	"mulpd 0x90(%%rax), %%xmm9;"
+                	"mulpd 0xa0(%%rax), %%xmm10;"
+                	"mulpd 0xb0(%%rax), %%xmm11;"
+                	"mulpd 0xc0(%%rax), %%xmm12;"
+                	"mulpd 0xd0(%%rax), %%xmm13;"
+                	"mulpd 0xe0(%%rax), %%xmm14;"
+                	"mulpd 0xf0(%%rax), %%xmm15;"
+                	"movupd %%xmm0, 0x00(%%rdx);"
+                	"movupd %%xmm1, 0x10(%%rdx);"
+                	"movupd %%xmm2, 0x20(%%rdx);"
+                	"movupd %%xmm3, 0x30(%%rdx);"
+                	"movupd %%xmm4, 0x40(%%rdx);"
+                	"movupd %%xmm5, 0x50(%%rdx);"
+                	"movupd %%xmm6, 0x60(%%rdx);"
+                	"movupd %%xmm7, 0x70(%%rdx);"
+                	"movupd %%xmm8, 0x80(%%rdx);"
+                	"movupd %%xmm9, 0x90(%%rdx);"
+                	"movupd %%xmm10, 0xa0(%%rdx);"
+                	"movupd %%xmm11, 0xb0(%%rdx);"
+                	"movupd %%xmm12, 0xc0(%%rdx);"
+                	"movupd %%xmm13, 0xd0(%%rdx);"
+                	"movupd %%xmm14, 0xe0(%%rdx);"
+                	"movupd %%xmm15, 0xf0(%%rdx);"
+		:
+                :"r"(input), "r"(output)
+                : "%rax","%rdx"
+        );
+}
+//void* calcPow2_row(void* id){
+ 
+void* calcPow2Thread(void *threadarg) {
+	
+  
+	int row_id = 0; 
+    	int start_row_id= ((threadInfo *)threadarg)->start;
+	int n_row = ((threadInfo *)threadarg)->count;
+//    	row_id = *((int*) id);
+
+	printf("invoked with %d %d\n", start_row_id, n_row);
+
+	for(row_id = start_row_id; row_id < start_row_id + n_row; row_id++) {
+
+	   	int vecLen = data_len[row_id]; 
+
+        	pow2map[row_id] = (double*) malloc(sizeof(double)*vecLen);
+
+		int offset = 0;
+		while(vecLen >= 8) {
+
+			if(vecLen >= 32) {
+			
+				computeSquare32(&(dataset[row_id][offset]),&(pow2map[row_id][offset]));
+				vecLen -= 32;
+				offset += 32;
+			}
+			if(vecLen < 32 && vecLen >=16) {
+		
+				computeSquare16(&(dataset[row_id][offset]), &(pow2map[row_id][offset]));
+				vecLen -= 16;
+				offset += 16;
+			}
+			if(vecLen < 16 && vecLen >=8) {
+
+				computeSquare8(&(dataset[row_id][offset]), &(pow2map[row_id][offset]));
+				vecLen -=8;
+				offset += 8;
+			}
+		}
+	
+		for(int i = 0; i < vecLen; i++) {
+				
+       		 	pow2map[row_id][offset] = pow(dataset[row_id][offset], 2.0);
+			++offset;
+
+		}
+
+
+    		/*for (int i=0; i<data_len[row_id]; i++) {
+        
+        		printf("ARTHY %f %f \n", pow2map[row_id][i] , pow(dataset[row_id][i], 2.0));
+        
+    		}*/
+
+	}    
+/*    	for (int i=0; i<data_len[row_id]; i++) {
         
         //calcuate the pow of 2
-        pow2map[row_id][i] = pow(dataset[row_id][i], 2.0);
+        	pow2map[row_id][i] = pow(dataset[row_id][i], 2.0);
         
-    }
-    
-    pthread_exit(NULL);
+    	}
+ */   
+    	pthread_exit(NULL);
     
 }
 
 //paralleled--------------------------------------------------------------------
 void calcPow2(){
     
-    //initialization
-    pow2map = (double**) malloc(sizeof(double*)*set_no);
+    	//initialization
+    	pow2map = (double**) malloc(sizeof(double*)*set_no);
     
-    //parallel the calculate square value of each row
-    //total barrier wait is the total number of rows + the main program
-    pthread_t pow2_threads[set_no];
+    	//parallel the calculate square value of each row
+	
+	int nThreads;
+
+
+	nThreads  = (set_no / bfactor) + ((set_no % bfactor) > 0) ;
+
+	int offset = 0;
+
+	int remainder = set_no;
+
+    	pthread_t pow2_threads[nThreads];
+	threadInfo threadArg[nThreads];
     
-    int create_result = 1;
+    	int create_result = 1;
     
-    int* index = (int*) malloc(sizeof(int)*set_no);
-    for (int i=0; i<set_no; i++) {
-        
-        pow2map[i] = (double*) malloc(sizeof(double)*data_len[i]);
-        
-        index[i] = i;
-        create_result = pthread_create(&pow2_threads[i], NULL, calcPow2_row, (void *)&index[i]);
-        
-        //create_result == 0 when it succeeds
-        while (create_result){
+
+	printf("\nNumber of threads is %d\n set_no is %d\n", nThreads, set_no);
+
+    	for (int i=0; i<nThreads; i++) {
+		
+		threadArg[i].start = offset;
+		threadArg[i].count = ((bfactor < remainder) ? bfactor : remainder);
+
+		//printf("calcPow2Thread %d %d \n", threadArg[i].start, threadArg[i].count);
+
+		create_result = pthread_create(&pow2_threads[i], NULL, calcPow2Thread, &threadArg[i]);
+
+		printf("calcPow2Thread %d %d offset %d rem %d \n", threadArg[i].start, threadArg[i].count, offset, remainder);
+        	while (create_result){
             
-            printf("ERROR; return code from !calcPow2! pthread_create() is %s at thread no %d\n", strerror(create_result), i);
-            create_result = pthread_create(&pow2_threads[i], NULL, calcPow2_row, (void *)&index[i]);
-            
-        }
+            		printf("ERROR; return code from !calcPow2! pthread_create() is %s at thread no %d\n", strerror(create_result), i);
+            		create_result = pthread_create(&pow2_threads[i], NULL, calcPow2Thread, &threadArg[i]);
+           	}
+
+		offset +=  threadArg[i].count;
+		remainder = set_no - offset; 
+       
         
-    }
+	}
     
-    //join the threads
-    for (int i=0; i<set_no; i++) {
+    	//join the threads
+    	for (int i=0; i<nThreads; i++) {
         
-        pthread_join(pow2_threads[i], NULL);
+		pthread_join(pow2_threads[i], NULL);
         
-    }
+    	}
     
-    //destory thr int* index
-    free(index);
     //print the pow2map
 	//printf("\nStart printing pow2map\n");
     
-    /*
-     for(int i=0; i<set_no; i++){
+     	/*for(int i=0; i<set_no; i++){
      
-     printf("\n");
-     for(int j=0;j<data_len[i];j++){
+     		printf("\n");
+	
+     		for(int j=0;j<data_len[i];j++){
      
-     printf("%f ",pow2map[i][j]);
+			printf("ARTHY %f %f %f\n", dataset[i][j], pow2map[i][j], pow(dataset[i][j], 2.0));
      
-     }
+     		}
+	}*/
      
-     }*/
     
 }
 
