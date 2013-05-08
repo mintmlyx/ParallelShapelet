@@ -20,7 +20,7 @@ extern double** pow2map;//initialized in the calcPow2 function
 extern double** dataset;//store all the data value
 extern int set_no;
 extern int* data_len;
-
+extern int bfactor;
 //argument struct
 struct computeDistance_para{
     
@@ -59,6 +59,20 @@ struct computeGap_para{
     
 };
 
+
+typedef struct {
+
+        int start;
+        int count;
+        void *data;
+        double *maxGap;
+        double *dt;
+        pthread_mutex_t* lock;
+} threadInfo;
+
+
+
+
 //function declaration
 void* calcPow2_row(void* id);
 void calcPow2();
@@ -70,5 +84,7 @@ void* findMaxGap(void* arg_para);
 int CompareDoubles2(double A, double B);
 
 void* computeGap(void* arg_para);
+
+void* calcDistThread(void* arg_para);
 
 #endif

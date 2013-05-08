@@ -10,14 +10,7 @@
 #include<string.h>
 #include <errno.h>
 #include "parallel_compute.h"
-int bfactor = 7;
-typedef struct {
 
-	int start;
-	int count;
-	void *data;
-
-} threadInfo;
 
 //paralleled--------------------------------------------------------------------
 int compare (const void * a, const void * b)
@@ -154,7 +147,6 @@ int computeSquare32(double *input, double *output)
                 : "%rax","%rdx"
         );
 }
-//void* calcPow2_row(void* id){
  
 void* calcPow2Thread(void *threadarg) {
 	
@@ -162,9 +154,7 @@ void* calcPow2Thread(void *threadarg) {
 	int row_id = 0; 
     	int start_row_id= ((threadInfo *)threadarg)->start;
 	int n_row = ((threadInfo *)threadarg)->count;
-//    	row_id = *((int*) id);
 
-	printf("invoked with %d %d\n", start_row_id, n_row);
 
 	for(row_id = start_row_id; row_id < start_row_id + n_row; row_id++) {
 
@@ -203,20 +193,7 @@ void* calcPow2Thread(void *threadarg) {
 		}
 
 
-    		/*for (int i=0; i<data_len[row_id]; i++) {
-        
-        		printf("ARTHY %f %f \n", pow2map[row_id][i] , pow(dataset[row_id][i], 2.0));
-        
-    		}*/
-
 	}    
-/*    	for (int i=0; i<data_len[row_id]; i++) {
-        
-        //calcuate the pow of 2
-        	pow2map[row_id][i] = pow(dataset[row_id][i], 2.0);
-        
-    	}
- */   
     	pthread_exit(NULL);
     
 }
@@ -239,18 +216,14 @@ void calcPow2(){
     	int create_result = 1;
     
 
-//	printf("\nNumber of threads is %d\n set_no is %d\n", nThreads, set_no);
-
     	for (int i=0; i<nThreads; i++) {
 		
 		threadArg[i].start = offset;
 		threadArg[i].count = ((bfactor < remainder) ? bfactor : remainder);
 
-		//printf("calcPow2Thread %d %d \n", threadArg[i].start, threadArg[i].count);
 
 		create_result = pthread_create(&pow2_threads[i], NULL, calcPow2Thread, &threadArg[i]);
 
-//		printf("calcPow2Thread %d %d offset %d rem %d \n", threadArg[i].start, threadArg[i].count, offset, remainder);
         	while (create_result){
             
             		printf("ERROR; return code from !calcPow2! pthread_create() is %s at thread no %d\n", strerror(create_result), i);
@@ -270,20 +243,6 @@ void calcPow2(){
         
     	}
     
-    //print the pow2map
-	//printf("\nStart printing pow2map\n");
-    
-     	/*for(int i=0; i<set_no; i++){
-     
-     		printf("\n");
-	
-     		for(int j=0;j<data_len[i];j++){
-     
-			printf("ARTHY %f %f %f\n", dataset[i][j], pow2map[i][j], pow(dataset[i][j], 2.0));
-     
-     		}
-	}*/
-     
     
 }
 void* calcDistThread(void *args) {
@@ -295,9 +254,6 @@ void* calcDistThread(void *args) {
 	struct computeGap_para* para = (struct computeGap_para*) threadArg->data;
 
 
-    	double* threshold_dt = para->threshold_dt;
-    	double* threshold_maxGap = para->threshold_maxGap;
-    	int cluster_no = para->cluster_no;
     	int shapelet_row_id = para->shapelet_row_id;
     	int shapelet_col_start_id = para->shapelet_col_start_id;
     	int shapelet_len = para->shapelet_len;
@@ -328,6 +284,47 @@ void* calcDistThread(void *args) {
 	pthread_exit(NULL);    
 }
 
+void* findMaxThread(void *args) {
+
+
+	threadInfo* threadArg = (threadInfo*) args;
+
+	int index_start = threadArg->start;
+	int index_len = threadArg->count;
+	struct computeGap_para* para = (struct computeGap_para*) threadArg->data;
+
+    	int cluster_no = para->cluster_no;
+    	int shapelet_row_id = para->shapelet_row_id;
+    	int shapelet_col_start_id = para->shapelet_col_start_id;
+    	int shapelet_len = para->shapelet_len;
+    	int* index_marker = para->index_marker;
+    	int index_marker_len = para->index_marker_len;
+
+	
+    	//set paramter array
+    	struct findMaxGap_para* findMaxGap_para_array = (struct findMaxGap_para*) malloc(sizeof(struct findMaxGap_para)*index_len);
+
+
+        for (int i=0, j=index_start; i<index_len; i++, j++) {
+
+                findMaxGap_para_array[i].dist_array = para->distarray;
+                findMaxGap_para_array[i].cluster_no = cluster_no;
+                findMaxGap_para_array[i].cluster_dis = (para->distarray[j]+para->distarray[j+1])/2.0;
+                findMaxGap_para_array[i].index_marker_len = index_marker_len;
+                findMaxGap_para_array[i].maxGap = threadArg->maxGap; //para->threshold_maxGap;
+                findMaxGap_para_array[i].dt = threadArg->dt; //para->threshold_dt;
+                //findMaxGap_para_array[i].maxGap = para->threshold_maxGap;
+                //findMaxGap_para_array[i].dt = para->threshold_dt;
+                findMaxGap_para_array[i].lock = threadArg->lock;
+        
+                findMaxGap((void*) &findMaxGap_para_array[i]);
+        
+        }
+
+	free(findMaxGap_para_array);
+	pthread_exit(NULL);
+}
+
 void* computeGap(void* arg_para){
     
     	struct computeGap_para* para = (struct computeGap_para*) arg_para;
@@ -342,7 +339,7 @@ void* computeGap(void* arg_para){
 	int offset = 0;
 	int remainder = index_marker_len;
 	threadInfo threadArg[nThreads];
-	pthread_t compDistThread[nThreads];
+	pthread_t idThread[nThreads];
     	double* dist_array = (double *)malloc(sizeof(double)*index_marker_len);
 	
 	para->distarray = dist_array;
@@ -355,14 +352,14 @@ void* computeGap(void* arg_para){
 		threadArg[i].count = ((bfactor < remainder) ? bfactor : remainder);
 		threadArg[i].data = arg_para;
 
-		create_result = pthread_create(&compDistThread[i], NULL, calcDistThread, &threadArg[i]);
+		create_result = pthread_create(&idThread[i], NULL, calcDistThread, &threadArg[i]);
 
 		
         	while (create_result){
             
             		printf("ERROR; return code from !calcPow2! pthread_create() is %s at thread no %d\n", strerror(create_result), i);
 
-			create_result = pthread_create(&compDistThread[i], NULL, calcDistThread, &threadArg[i]);
+			create_result = pthread_create(&idThread[i], NULL, calcDistThread, &threadArg[i]);
            	}
 
 		offset +=  threadArg[i].count;
@@ -374,18 +371,10 @@ void* computeGap(void* arg_para){
     		
 	for (int i=0; i<nThreads; i++) {
         
-       		pthread_join(compDistThread[i], NULL);
+       		pthread_join(idThread[i], NULL);
         
     	}
         
-    	for (int i=0; i<index_marker_len; i++) {
-        
-        	printf("\nARTHY Dist_array[%d]: %f\n",i , dist_array[i]);
-        
-    	}
-    
-    	//printf("Dist Array Done!");
-    
     	//sort the distance array in ascending order
     	qsort(dist_array, index_marker_len, sizeof(double), compare);
 	
@@ -400,45 +389,52 @@ void* computeGap(void* arg_para){
     	pthread_mutex_init(&lock, NULL);
     	//initial thread array
     	pthread_t findMaxGap_threads[index_marker_len-1];
-    
-    	//parallel execution of the findMaxGapp
-    	for (int i=0; i<index_marker_len-1; i++) {
-        
-        	findMaxGap_para_array[i].dist_array = dist_array;
-        	findMaxGap_para_array[i].cluster_no = cluster_no;
-        	findMaxGap_para_array[i].cluster_dis = (dist_array[i]+dist_array[i+1])/2.0;
-        	findMaxGap_para_array[i].index_marker_len = index_marker_len;
-        	findMaxGap_para_array[i].maxGap = &maxGap;
-        	findMaxGap_para_array[i].dt = &dt;
-        	findMaxGap_para_array[i].lock = &lock;
-        
-        	create_result = pthread_create(&findMaxGap_threads[i], NULL, findMaxGap, (void*) &findMaxGap_para_array[i]);
-        
-        	//create_result == 0 when it succeeds
+
+	offset = 0;
+	remainder = index_marker_len -1;
+	nThreads  = (remainder / bfactor) + ((remainder % bfactor) > 0) ;
+
+
+	for(int i=0; i<nThreads; i++) {
+
+		threadArg[i].start = offset;
+		threadArg[i].count = ((bfactor < remainder) ? bfactor : remainder);
+		threadArg[i].data = arg_para;
+		threadArg[i].lock = &lock;
+
+		threadArg[i].maxGap = &maxGap;
+		threadArg[i].dt = &dt;
+
+		create_result = pthread_create(&idThread[i], NULL, findMaxThread, &threadArg[i]);
+
+		
         	while (create_result){
             
-            		printf("ERROR; return code from !findMaxGap! pthread_create() is %s at thread no %d\n", strerror(create_result), i);
-            		create_result = pthread_create(&findMaxGap_threads[i], NULL, findMaxGap, (void*) &findMaxGap_para_array[i]);
-            
-       	 	}
+            		printf("ERROR; return code from !calcPow2! pthread_create() is %s at thread no %d\n", strerror(create_result), i);
+
+			create_result = pthread_create(&idThread[i], NULL, findMaxThread, &threadArg[i]);
+           	}
+
+		offset +=  threadArg[i].count;
+		remainder -=  threadArg[i].count;
+       
+        
+	}
+    		//join all threads
+
+    	for (int i=0; i<nThreads; i++) {
+        
+        	pthread_join(idThread[i], NULL);
         
     	}
-    
-    	//join the threads
-    	for (int i=0; i<index_marker_len-1; i++) {
-        
-        	pthread_join(findMaxGap_threads[i], NULL);
-        
-    	}
-    
+   
     	//write the output
     	*threshold_dt = dt;
     	*threshold_maxGap = maxGap;
-    	printf("\nmaxGap %f dt %f\n",*threshold_maxGap, dt);
+
     
     	free(findMaxGap_para_array);
     	free(dist_array);
-    //    pthread_exit(NULL);
     
 }
 
@@ -526,11 +522,11 @@ void* findMaxGap(void* arg_para){
             
             pthread_mutex_lock(para->lock);
             
-            printf("ratio: %f",ratio);
-            printf("\ntmp_gap: %f VS maxGap: %f\n",tmp_gap,*(para->maxGap));
+            //printf("ratio: %f",ratio);
+            //printf("\ntmp_gap: %f VS maxGap: %f\n",tmp_gap,*(para->maxGap));
             
             //printf("\ntmp_gap: %f tmp_dist: %f +++++",tmp_gap, tmp_dist);
-            printf("\ncluster_a_mean: %f cluster_a_std: %f cluster_b_mean: %f cluster_b_std: %f\n",cluster_a_mean, cluster_a_std, cluster_b_mean, cluster_b_std);
+            //printf("\ncluster_a_mean: %f cluster_a_std: %f cluster_b_mean: %f cluster_b_std: %f\n",cluster_a_mean, cluster_a_std, cluster_b_mean, cluster_b_std);
             for(int k=0;k<index_marker_len;k++){
                 //printf("\ndist: %f tmp_dist: %f marker: %d",distance_array[k] ,tmp_dist, data_cluster[k]);
             }
@@ -539,13 +535,13 @@ void* findMaxGap(void* arg_para){
                 
                 *(para->maxGap) = tmp_gap;
                 *(para->dt) = tmp_dist;
-                //printf("\nmaxGap in thread: %f\n",tmp_gap);
+                //printf("\nmaxGap %f dt %f in thread\n",tmp_gap, tmp_dist);
             }
             pthread_mutex_unlock(para->lock);
             
         }else{
             
-            printf("\nNot passed: %d",cluster_a);
+            //printf("\nNot passed: %d\n",cluster_a);
         }
         
     }
@@ -553,7 +549,6 @@ void* findMaxGap(void* arg_para){
     //free the create pointer
     free(data_cluster);
     
-    pthread_exit(NULL);
     
 }
 
@@ -596,7 +591,6 @@ void* computeDistance(void* arg_para){
     *(para->distance) = (min_dist/(double)shapelet_len);
     
     free(shapelet_normalized);
-    //pthread_exit(NULL);
     
 }
 

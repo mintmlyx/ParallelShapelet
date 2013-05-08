@@ -51,58 +51,6 @@ int max_index(double *gap, int total)
 	return max;
 }
 
-void spawn_distance(int shapelet_row, int shapelet_col, int shapelet_len, int *old_map, int newsize, double *dist, double thresh,
-                    int *dataset_A, int *dataset_Alen)
-{
-    
-    struct computeDistance_para param[newsize];
-    
-    pthread_t  tid[newsize];
-    
-    int create_result = 1;
-    for (int i=0; i<newsize; i++) {
-        
-        //initial the computeDistance_para
-        param[i].shapelet_row_id = shapelet_row;
-        param[i].shapelet_col_start_id = shapelet_col;
-        param[i].shapelet_len = shapelet_len;
-        param[i].data_row_id = old_map[i];
-        param[i].distance =  &dist[i];
-        
-        
-        //issue the distance call
-        create_result = pthread_create(&tid[i], NULL, computeDistance, (void*) &param[i]);
-        
-        //	computeDistance((void*)&param);
-        //create_result == 0 when it succeeds
-        if (create_result){
-            
-            printf("ERROR; return code from !computeDistance! pthread_create() is %d\n", create_result);
-            exit(-1);
-        }
-    }
-    
-	for(int i=0; i<newsize; i++) {
-		pthread_join(tid[i], NULL);
-	}
-    
-	int i= 0,j = 0;
-	for(; i<newsize; i++) {
-        
-		//dist[i] = param[i].distance;
-		/*If the computed distance is less than threshold then add to Dataset A*/
-		if (CompareDoubles2(dist[i], thresh) <= 0) {
-			dataset_A[j] = i;
-			j++;
-		}
-	}
-    
-	*dataset_Alen = j;
-    
-    
-}
-
-
 void* compute_gap_thread(void* arg)
 {
     
@@ -124,14 +72,16 @@ void* compute_gap_thread(void* arg)
 	int *subseq_col = param->subseq_col;
 	double** p_subseq = param->p_subseq;
 	int * ps_len = param->ps_len;
+
+	int total = ts_len-subseqlen+1;
+
+
+	struct computeGap_para *para = (struct computeGap_para *) malloc(total * sizeof (struct computeGap_para));
     
-    	printf("SEQUENTIAL cnt_indx/index %d to %d ts_len %d subseqlen %d  \n", cnt_indx, cnt_indx + ts_len-subseqlen+1, ts_len,subseqlen);
-	for(index=cnt_indx, i=0; index < (cnt_indx + ts_len - subseqlen + 1); index++, i++) {
+	for(index=cnt_indx, i=0; index < (cnt_indx + total); index++, i++) {
         
         
 		/*Compute the gap and threshold for each of the subsequence*/
-        
-		struct computeGap_para para;
         
 		p_subseq[index] = ts + i;
         	ps_len[index] = subseqlen;
@@ -140,20 +90,21 @@ void* compute_gap_thread(void* arg)
 		subseq_col[index] = i;
         
         //initialize parameter
-		para.threshold_dt = &dt[index];
-		para.threshold_maxGap = &gap[index];
-        	para.cluster_no = cluster_no;
-        	para.shapelet_row_id = subseq_row;
-        	para.shapelet_col_start_id =  i;
-        	para.shapelet_len = subseqlen;
-        	para.index_marker = old_map;
-        	para.index_marker_len = dataset_no;
+		para[i].threshold_dt = &dt[index];
+		para[i].threshold_maxGap = &gap[index];
+        	para[i].cluster_no = cluster_no;
+        	para[i].shapelet_row_id = subseq_row;
+        	para[i].shapelet_col_start_id =  i;
+        	para[i].shapelet_len = subseqlen;
+        	para[i].index_marker = old_map;
+        	para[i].index_marker_len = dataset_no;
         
-        	printf("Start computeGap for index %d length %d  scol %d srow %d dataset_no %d total %d ts_len %d cnt_indx %d \n", index, subseqlen, i, subseq_row, dataset_no, ts_len-subseqlen+1, ts_len, cnt_indx);
-        	computeGap((void*) &para);
+
+        	computeGap((void*) &para[i]);
         
-        	printf("Computed gap is  %f dt %f index %d\n", gap[index], dt[index], index);
+        	printf("Computed gap  %f dt %f index %d \n", gap[index], dt[index], index);
 	}
+	free(para);
 	pthread_exit(NULL);
 }
 
@@ -164,10 +115,9 @@ void spawn_thread(int* subseqlen, double *ts,int ts_len, int subseq_row, int dat
     
 	pthread_t tid[x];
 	int prev = 0;
-	struct computegap_spwn_param param[x];
+	struct computegap_spwn_param *param = malloc(x * sizeof(struct computegap_spwn_param));
 	int cnt_indx = 0;
 	
-	//printf("%d PARALLEL\n", x);
 	for(k=0 ; k<x; k++) {
         	
 		//param.tid = tid;
@@ -186,7 +136,6 @@ void spawn_thread(int* subseqlen, double *ts,int ts_len, int subseq_row, int dat
         	param[k].ps_len = ps_len;
         
         
-        	printf("\nspawning thread subseq idx %d cnt %d subseqrow %d tslen %d subslen %d\n", k, cnt_indx,subseq_row, ts_len, subseqlen[k]);
     		int ret = pthread_create(&tid[k], NULL, compute_gap_thread, (void*) &param[k]);
         
         	if(ret) {
@@ -202,9 +151,10 @@ void spawn_thread(int* subseqlen, double *ts,int ts_len, int subseq_row, int dat
 	for(k=0 ; k<x; k++) {
 		pthread_join(tid[k], NULL);
 	}
+
+	free(param);
     
 }
-
 
 
 void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen, char appname[][100], char inputfiles[][100], char *outputname, int input_cluster_no,int start_ts_id)
@@ -270,12 +220,12 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		fprintf(fp,"************************\n");
 		fprintf(fp, "Iteration %d\n", iter);
         
-		printf("%d to %d in steps of %d\n", sLen-LOWER, sLen + UPPER, STEP);
+		//printf("%d to %d in steps of %d\n", sLen-LOWER, sLen + UPPER, STEP);
 		for(x=0,sl=sLen-LOWER; sl <= sLen+UPPER && sl <=ts_len; sl+=STEP) {
             
 			if(sl <= ts_len) {
                 		subseq_len[x] = sl;
-         		        printf("len is %d cnt is %d total till now is %d\n", sl, ts_len-sl, cnt);
+         		        //printf("len is %d cnt is %d total till now is %d\n", sl, ts_len-sl, cnt);
 		                //cnt += ts_len - subseq_len[x]+ 1;
                 		cnt += ts_len - sl + 1;
                 		++x;
@@ -284,16 +234,10 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 				printf("Sl is %d ts_len is %d\n", sl, ts_len);
 			}
 		}
-		for(int u=0; u<x; u++)
-			printf("len is %d \n", subseq_len[u]);
-
-		printf("TOTAL SUBS = %d \n", x);
-		//printf("CNT is %d\n", cnt);
 		double* p_subseq[cnt];
 		int ps_len[cnt];
 		double gap[cnt];
 		double dt[cnt];
-		//pthread_t tid[x];
 		int subseq_col[cnt];
         
 		for (k = 0, j= 0 ; k< n_sample; k++) {
@@ -332,8 +276,6 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		int dataset_A[newsize];
 		int dataset_Alen;
        
-		printf("NEW SIZE is %d , J is %d\n", newsize, j); 
-		for(int z= 0 ; z<j; z++) printf("old_id[%d] = %d \n",z, old_id[z]);
         
 		memset(dataset_A, -1, newsize *sizeof(int));
         
@@ -348,17 +290,12 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
         
 		int cluster_no = input_cluster_no;
         
-		printf("\nspawning thread subseq_row %d subseq idx %d cnt %d tslen %d  iteration %d\n",subseq_row, k, cnt, ts_len, iter);
         
 		spawn_thread(subseq_len, ts, ts_len, subseq_row, newsize, old_id, dt, gap, cluster_no, subseq_col, p_subseq, ps_len, x);
         
         
 		/*Find the subsequence which gives the maximum gap for the dataset*/
 		printf("\nComputing max gap index\n");
-        
-      		for (int y=0; y<cnt; y++) {
-		            printf("%f \n",gap[y]);
-       		 }
         
 		index = max_index(gap, cnt);
         
@@ -378,18 +315,73 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		fprintf(fp, "Shapelet row %d col %d len %d\n", ushapelet_row[iter], ushapelet_col[iter], ushapelet_len[iter]);
 		dataset_Alen = 0;
 		j=0;
-		spawn_distance(subseq_row, subseq_col[index], ps_len[index], old_id, newsize, dist, dt[index], dataset_A, &dataset_Alen);
+
+        	int nThreads;
+        	nThreads  = (newsize / bfactor) + ((newsize % bfactor) > 0) ;
+        	int offset = 0;
+        	int remainder = newsize;
+        	threadInfo threadArg[nThreads];
+        	pthread_t idThread[nThreads];
+		struct computeGap_para gap_para;
+
+		gap_para.distarray = dist;
+        	gap_para.shapelet_row_id = subseq_row;
+        	gap_para.shapelet_col_start_id = subseq_col[index];
+        	gap_para.shapelet_len = ps_len[index];
+        	gap_para.index_marker = old_id;
+
+        	int create_result = 1;
+        	for (int i=0; i<nThreads; i++) {
+
+                	threadArg[i].start = offset;
+                	threadArg[i].count = ((bfactor < remainder) ? bfactor : remainder);
+                	threadArg[i].data = &gap_para;
+
+                	create_result = pthread_create(&idThread[i], NULL, calcDistThread, &threadArg[i]);
+
+
+                	while (create_result){
+
+                        	printf("ERROR; return code from !calcPow2! pthread_create() is %s at thread no %d\n", strerror(create_result), i);
+
+                        	create_result = pthread_create(&idThread[i], NULL, calcDistThread, &threadArg[i]);
+                	}
+
+                	offset +=  threadArg[i].count;
+                	remainder -=   offset;
+
+
+        	}
+
+        	for(int i=0; i<nThreads; i++) {
+
+                	pthread_join(idThread[i], NULL);
+
+        	}
+
+        	int i= 0,m = 0;
+        	for(; i<newsize; i++) {
+
+                	//dist[i] = param[i].distance;
+                	/*If the computed distance is less than threshold then add to Dataset A*/
+                	if (CompareDoubles2(dist[i], dt[index]) <= 0) {
+                        	dataset_A[m] = i;
+                        	m++;
+                	}
+        	}
+
+        	dataset_Alen = m;
+
         
 		
 		printf("Checking for clustering\n");
         
 		if(clustered(dataset_Alen, newsize)){
-            printf("Too small cluster!");
-            break;
-        }
+            		printf("Too small cluster!");
+            		break;
+        	}
 		else {
             
-			
 			/*Find the dataset far away from the ushapelet*/
 			index2 = max_index(dist, newsize);
 			ts = n_dataset[index2];
@@ -427,7 +419,7 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		
 	}
     
-    /*
+   /* 
      printf("The discovered shapelets are: \n");
      for ( int z=0; z<=iter; z++) {
      

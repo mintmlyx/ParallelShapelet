@@ -14,7 +14,7 @@ double** dataset;//store all the data value
 int set_no;
 int* data_len;
 double **pow2map;
-
+int bfactor = 7;
 //sine wave generation
 double sin(double x)
 {
@@ -130,11 +130,10 @@ int main(int argc, char *argv[])
     
     printf("\nStart extractU_shapelet.......");
     char* outputfile = "parallel_synthesis_output.txt";
-    for (int i=0; i<set_no; i++) {
-         extractU_Shapelets(dataset, data_len, set_no, 3, appname, inputfile, outputfile, 3, i);
-    }
-    
-    printf("\nFree memory.......");
+	for (int i=0; i<set_no; i++) {
+        	 extractU_Shapelets(dataset, data_len, set_no, 3, appname, inputfile, outputfile, 3, i);
+	}
+
     for (int i=0; i<set_no; i++) {
         free(dataset[i]);
     }
