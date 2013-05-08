@@ -67,7 +67,7 @@ void spawn_distance(int shapelet_row, int shapelet_col, int shapelet_len, int *o
         param[i].shapelet_col_start_id = shapelet_col;
         param[i].shapelet_len = shapelet_len;
         param[i].data_row_id = old_map[i];
-        param[i].distance = 0.0; //&dist[i];
+        param[i].distance =  &dist[i];
         
         
         //issue the distance call
@@ -89,7 +89,7 @@ void spawn_distance(int shapelet_row, int shapelet_col, int shapelet_len, int *o
 	int i= 0,j = 0;
 	for(; i<newsize; i++) {
         
-		dist[i] = param[i].distance;
+		//dist[i] = param[i].distance;
 		/*If the computed distance is less than threshold then add to Dataset A*/
 		if (CompareDoubles2(dist[i], thresh) <= 0) {
 			dataset_A[j] = i;
@@ -247,8 +247,6 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 	ts = pd_Dataset[start_ts_id];
 	ts_len = ds_len[start_ts_id];
    
-	for(int i=0; i< n_sample; i++) 
-		printf("ds_len[%d] = %d \n", i, ds_len[i]); 
     
 	printf("\nextractU_Shapelet %d\n", start_ts_id);
     

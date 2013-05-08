@@ -28,8 +28,9 @@ struct computeDistance_para{
     int shapelet_col_start_id;
     int shapelet_len;
     int data_row_id;
-    double distance;
+    double *distance;
     
+//    double distance;
 };
 
 struct findMaxGap_para{
@@ -54,6 +55,7 @@ struct computeGap_para{
     int shapelet_len;
     int* index_marker;
     int index_marker_len;
+    double *distarray;
     
 };
 
