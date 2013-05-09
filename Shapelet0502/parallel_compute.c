@@ -30,124 +30,6 @@ int CompareDoubles2(double A, double B){
     
 }
 
-int computeSquare8(double *input, double *output)
-{
-
-	  __asm ( 	"mov  %0, %%rax;"
-	                "mov  %1, %%rdx;"
-                	"movupd 0x00(%%rax), %%xmm0;"
-                	"movupd 0x10(%%rax), %%xmm1;"
-                	"movupd 0x20(%%rax), %%xmm2;"
-                	"movupd 0x30(%%rax), %%xmm3;"
-                	"mulpd 0x00(%%rax), %%xmm0;"
-                	"mulpd 0x10(%%rax), %%xmm1;"
-                	"mulpd 0x20(%%rax), %%xmm2;"
-                	"mulpd 0x30(%%rax), %%xmm3;"
-                	"movupd %%xmm0, 0x00(%%rdx);"
-                	"movupd %%xmm1, 0x10(%%rdx);"
-                	"movupd %%xmm2, 0x20(%%rdx);"
-                	"movupd %%xmm3, 0x30(%%rdx);"
-                :
-                :"r"(input), "r"(output)
-                : "%rax","%rdx"
-        );
-
-}
-
-int computeSquare16(double *input, double *output)
-{
-
-	  __asm ( 	"mov  %0, %%rax;"
-	                "mov  %1, %%rdx;"
-                	"movupd 0x00(%%rax), %%xmm0;"
-                	"movupd 0x10(%%rax), %%xmm1;"
-                	"movupd 0x20(%%rax), %%xmm2;"
-                	"movupd 0x30(%%rax), %%xmm3;"
-                	"movupd 0x40(%%rax), %%xmm4;"
-                	"movupd 0x50(%%rax), %%xmm5;"
-                	"movupd 0x60(%%rax), %%xmm6;"
-                	"movupd 0x70(%%rax), %%xmm7;"
-                	"mulpd 0x00(%%rax), %%xmm0;"
-                	"mulpd 0x10(%%rax), %%xmm1;"
-                	"mulpd 0x20(%%rax), %%xmm2;"
-                	"mulpd 0x30(%%rax), %%xmm3;"
-                	"mulpd 0x40(%%rax), %%xmm4;"
-                	"mulpd 0x50(%%rax), %%xmm5;"
-                	"mulpd 0x60(%%rax), %%xmm6;"
-                	"mulpd 0x70(%%rax), %%xmm7;"
-                	"movupd %%xmm0, 0x00(%%rdx);"
-                	"movupd %%xmm1, 0x10(%%rdx);"
-                	"movupd %%xmm2, 0x20(%%rdx);"
-                	"movupd %%xmm3, 0x30(%%rdx);"
-                	"movupd %%xmm4, 0x40(%%rdx);"
-                	"movupd %%xmm5, 0x50(%%rdx);"
-                	"movupd %%xmm6, 0x60(%%rdx);"
-                	"movupd %%xmm7, 0x70(%%rdx);"
-		:
-                :"r"(input), "r"(output)
-                : "%rax","%rdx"
-        );
-}
-
-int computeSquare32(double *input, double *output)
-{
-
-	  __asm ( 	"mov  %0, %%rax;"
-	                "mov  %1, %%rdx;"
-                	"movupd 0x00(%%rax), %%xmm0;"
-                	"movupd 0x10(%%rax), %%xmm1;"
-                	"movupd 0x20(%%rax), %%xmm2;"
-                	"movupd 0x30(%%rax), %%xmm3;"
-                	"movupd 0x40(%%rax), %%xmm4;"
-                	"movupd 0x50(%%rax), %%xmm5;"
-                	"movupd 0x60(%%rax), %%xmm6;"
-                	"movupd 0x70(%%rax), %%xmm7;"
-                	"movupd 0x80(%%rax), %%xmm8;"
-                	"movupd 0x90(%%rax), %%xmm9;"
-                	"movupd 0xa0(%%rax), %%xmm10;"
-                	"movupd 0xb0(%%rax), %%xmm11;"
-                	"movupd 0xc0(%%rax), %%xmm12;"
-                	"movupd 0xd0(%%rax), %%xmm13;"
-                	"movupd 0xe0(%%rax), %%xmm14;"
-                	"movupd 0xf0(%%rax), %%xmm15;"
-                	"mulpd 0x00(%%rax), %%xmm0;"
-                	"mulpd 0x10(%%rax), %%xmm1;"
-                	"mulpd 0x20(%%rax), %%xmm2;"
-                	"mulpd 0x30(%%rax), %%xmm3;"
-                	"mulpd 0x40(%%rax), %%xmm4;"
-                	"mulpd 0x50(%%rax), %%xmm5;"
-                	"mulpd 0x60(%%rax), %%xmm6;"
-                	"mulpd 0x70(%%rax), %%xmm7;"
-                	"mulpd 0x80(%%rax), %%xmm8;"
-                	"mulpd 0x90(%%rax), %%xmm9;"
-                	"mulpd 0xa0(%%rax), %%xmm10;"
-                	"mulpd 0xb0(%%rax), %%xmm11;"
-                	"mulpd 0xc0(%%rax), %%xmm12;"
-                	"mulpd 0xd0(%%rax), %%xmm13;"
-                	"mulpd 0xe0(%%rax), %%xmm14;"
-                	"mulpd 0xf0(%%rax), %%xmm15;"
-                	"movupd %%xmm0, 0x00(%%rdx);"
-                	"movupd %%xmm1, 0x10(%%rdx);"
-                	"movupd %%xmm2, 0x20(%%rdx);"
-                	"movupd %%xmm3, 0x30(%%rdx);"
-                	"movupd %%xmm4, 0x40(%%rdx);"
-                	"movupd %%xmm5, 0x50(%%rdx);"
-                	"movupd %%xmm6, 0x60(%%rdx);"
-                	"movupd %%xmm7, 0x70(%%rdx);"
-                	"movupd %%xmm8, 0x80(%%rdx);"
-                	"movupd %%xmm9, 0x90(%%rdx);"
-                	"movupd %%xmm10, 0xa0(%%rdx);"
-                	"movupd %%xmm11, 0xb0(%%rdx);"
-                	"movupd %%xmm12, 0xc0(%%rdx);"
-                	"movupd %%xmm13, 0xd0(%%rdx);"
-                	"movupd %%xmm14, 0xe0(%%rdx);"
-                	"movupd %%xmm15, 0xf0(%%rdx);"
-		:
-                :"r"(input), "r"(output)
-                : "%rax","%rdx"
-        );
-}
- 
 void* calcPow2Thread(void *threadarg) {
 	
   
@@ -162,36 +44,7 @@ void* calcPow2Thread(void *threadarg) {
 
         	pow2map[row_id] = (double*) malloc(sizeof(double)*vecLen);
 
-		int offset = 0;
-		while(vecLen >= 8) {
-
-			if(vecLen >= 32) {
-			
-				computeSquare32(&(dataset[row_id][offset]),&(pow2map[row_id][offset]));
-				vecLen -= 32;
-				offset += 32;
-			}
-			if(vecLen < 32 && vecLen >=16) {
-		
-				computeSquare16(&(dataset[row_id][offset]), &(pow2map[row_id][offset]));
-				vecLen -= 16;
-				offset += 16;
-			}
-			if(vecLen < 16 && vecLen >=8) {
-
-				computeSquare8(&(dataset[row_id][offset]), &(pow2map[row_id][offset]));
-				vecLen -=8;
-				offset += 8;
-			}
-		}
-	
-		for(int i = 0; i < vecLen; i++) {
-				
-       		 	pow2map[row_id][offset] = pow(dataset[row_id][offset], 2.0);
-			++offset;
-
-		}
-
+		computeSquareVec(dataset[row_id], pow2map[row_id], 0, vecLen);
 
 	}    
     	pthread_exit(NULL);
@@ -580,22 +433,25 @@ void* computeDistance(void* arg_para){
     free(shapelet_normalized);
     
 }
-
 double euclideanDistance(double* array1, double* array2, int len){
-    
-    double sum = 0.0;
-    for (int i=0; i<len; i++) {
-       
-        sum = sum + pow((array1[i]-array2[i]), 2.0);
 
-        
-    }
-    
-    
-    return sum;
-    
+        	
+	int vecLen = len;
+	double *buffer = (double*) malloc(sizeof(double)*vecLen);
+		
+	int offset = 0;
+	double sum =0.0, temp = 0.0;	
+
+	computeDiffVec(array1, array2, buffer, offset, len);
+	computeSquareVec(buffer, buffer, offset, len);
+	sum = computeScalarSum(buffer, offset, len);
+
+	//printf("Euclidean distance %f\n", sum);
+
+	free(buffer);
+	return sum;
+
 }
-
 
 
 //extract the data from the square map
@@ -603,32 +459,24 @@ double euclideanDistance(double* array1, double* array2, int len){
 double* zNormal(int row, int col_start, int col_end){
 //calc the mean
 
-    double mean = 0.0;
+    	double mean = 0.0;
 
-    double std = 0.0;
+    	double std = 0.0;
 
-    int array_len = col_end - col_start + 1;
+    	int array_len = col_end - col_start + 1;
 
-    
-
+	mean = computeScalarSum(dataset[row], col_start, array_len);
+   	std = computeScalarSum(pow2map[row], col_start, array_len); 
+/*
     for(int i=col_start; i<=col_end; i++){
-
-        
-
         mean += dataset[row][i];
-
         std += pow2map[row][i];
-
-        
-
     }
-
-    
+  */  
 
     //normalize the mean
 
     	mean = mean / (double) array_len;
-
     
     	if(CompareDoubles2((std / (double) array_len) - pow(mean , 2.0) ,0.0) <= 0) {
 
@@ -640,13 +488,9 @@ double* zNormal(int row, int col_start, int col_end){
 
    	} 
 
-    double* z_array = (double*) malloc(sizeof(double)*array_len);
+	    double* z_array = (double*) malloc(sizeof(double)*array_len);
 
-    
-
-    if(CompareDoubles2(std,0.0)==0){
-
-        
+    	if(CompareDoubles2(std,0.0)==0){
 
         for (int i=0; i<array_len; i++) {
 
@@ -654,19 +498,14 @@ double* zNormal(int row, int col_start, int col_end){
 
             z_array[i] = 0.0;
 
-            
-
         }
 
-        
 
     }else{
 
     
 
         for (int i=0; i<array_len; i++) {
-
-        
 
             //calc the z-value
 
@@ -678,10 +517,6 @@ double* zNormal(int row, int col_start, int col_end){
 
     }
 
-    
-
     return z_array;
-
-    
     
 }

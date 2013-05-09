@@ -276,19 +276,10 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
         
 		/*index of the distance  within threshold*/
 		int dataset_A[newsize];
-		int dataset_Alen;
+		int dataset_Alen = 0;
        
         
 		memset(dataset_A, -1, newsize *sizeof(int));
-        
-		/*********VERIFY*******/
-       
-/*		if(ts_len < sLen) {
-			
-			printf(" The time series is too short to classify\n");
-			
-			break; // break?
-		}*/
         
 		int cluster_no = input_cluster_no;
         
@@ -315,8 +306,6 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
         
 		fprintf(fp, "Application %s\n Dataset path %s\n", appname[subseq_row], inputfiles[subseq_row]);
 		fprintf(fp, "Shapelet row %d col %d len %d\n", ushapelet_row[iter], ushapelet_col[iter], ushapelet_len[iter]);
-		dataset_Alen = 0;
-		j=0;
 
         	int nThreads;
         	nThreads  = (newsize / bfactor) + ((newsize % bfactor) > 0) ;
@@ -331,9 +320,9 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
         	gap_para.shapelet_col_start_id = subseq_col[index];
         	gap_para.shapelet_len = ps_len[index];
         	gap_para.index_marker = old_id;
-
+		int i=0;
         	int create_result = 1;
-        	for (int i=0; i<nThreads; i++) {
+        	for (i=0; i<nThreads; i++) {
 
                 	threadArg[i].start = offset;
                 	threadArg[i].count = ((bfactor < remainder) ? bfactor : remainder);
@@ -350,29 +339,28 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
                 	}
 
                 	offset +=  threadArg[i].count;
-                	remainder -=   offset;
+                	remainder -=  threadArg[i].count;
 
 
         	}
 
-        	for(int i=0; i<nThreads; i++) {
+        	for(i=0; i<nThreads; i++) {
 
                 	pthread_join(idThread[i], NULL);
 
         	}
-
-        	int i= 0,m = 0;
+		j=0;
         	for(; i<newsize; i++) {
 
                 	//dist[i] = param[i].distance;
                 	/*If the computed distance is less than threshold then add to Dataset A*/
                 	if (CompareDoubles2(dist[i], dt[index]) <= 0) {
-                        	dataset_A[m] = i;
-                        	m++;
+                        	dataset_A[j] = i;
+                        	j++;
                 	}
         	}
 
-        	dataset_Alen = m;
+        	dataset_Alen = j;
 
         
 		

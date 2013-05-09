@@ -14,4 +14,4 @@ $(EXE): $(OBJ)
 .PHONY: clean
 
 clean: 
-	rm -rf *.o $(EXE)
+	rm -rf *.o $(EXE) *.txt

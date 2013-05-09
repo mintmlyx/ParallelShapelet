@@ -340,3 +340,160 @@ double scalarSum32(double *input, double *out)
 
         return *out;
 }
+
+int computeSquareVec(double *source, double *dest, int off, int len)
+{
+
+		int offset = off;
+		int vecLen = len;
+	
+		if(offset % 2) {
+			dest[offset] = pow(source[offset], 2.0);
+			offset++;
+			--vecLen;
+		}
+                while(vecLen >= 8) {
+
+                        if(vecLen >= 32) {
+
+                                computeSquare32(&source[offset],&dest[offset]);
+                                vecLen -= 32;
+                                offset += 32;
+                        }
+                        if(vecLen < 32 && vecLen >=16) {
+
+                                computeSquare16(&source[offset], &dest[offset]);
+                                vecLen -= 16;
+                                offset += 16;
+                        }
+                        if(vecLen < 16 && vecLen >=8) {
+
+                                computeSquare8(&source[offset], &dest[offset]);
+                                vecLen -=8;
+                                offset += 8;
+                        }
+                }
+
+                for(int i = 0; i < vecLen; i++) {
+
+                        dest[offset] = pow(source[offset], 2.0);
+                        ++offset;
+
+                }
+/*
+		printf("SQUARE IS \n");
+		for (int i=0; i < len; i++)
+			printf("%f %f\n", source[i], dest[i]);
+
+		printf("SQUARE END \n");
+*/
+}
+
+double computeScalarSum(double *source, int from, int len)
+{
+
+		int offset = from;
+		int vecLen = len;
+		double sum = 0.0, temp = 0.0;
+		if(offset % 2) {
+			sum = source[offset];
+			offset++;
+			--vecLen;
+		}
+                while(vecLen >= 8) {
+
+                        if(vecLen >= 32) {
+
+                                sum += scalarSum32(&(source[offset]),&temp);
+                                vecLen -= 32;
+                                offset += 32;
+                        }
+                        if(vecLen < 32 && vecLen >=16) {
+
+                                sum += scalarSum16(&(source[offset]), &temp);
+                                vecLen -= 16;
+                                offset += 16;
+                        }
+                        if(vecLen < 16 && vecLen >=8) {
+
+                                sum += scalarSum8(&(source[offset]), &temp);
+                                vecLen -=8;
+                                offset += 8;
+                        }
+                }
+                for(int i = 0; i < vecLen; i++) {
+
+                        sum += source[offset];
+                        ++offset;
+
+		}
+		return sum;
+}
+
+int computeDiffVec(double *array1, double *array2, double *buffer, int from, int len) {
+
+	int vecLen = len;
+	int offset = from;
+	
+	if(offset % 2) {
+		buffer[offset] = (array1[offset] - array2[offset]);
+		++offset;
+		--vecLen;
+	}
+	while(vecLen >= 8) {
+
+
+                if(vecLen >= 32) {
+			
+                        computeDiff32(&(array1[offset]), &(array2[offset]), &(buffer[offset]));
+                        //computeSquare32(&(buffer[offset]), &(buffer[offset]));
+                        //sum += scalarSum32(&(buffer[offset]), &temp);
+                        vecLen -= 32;
+                        offset += 32;
+                }
+                if(vecLen < 32 && vecLen >=16) {
+
+                        computeDiff16(&(array1[offset]), &(array2[offset]), &(buffer[offset]));
+                        //computeSquare16(&(buffer[offset]), &(buffer[offset]));
+                        //sum += scalarSum16(&(buffer[offset]), &temp);
+                        vecLen -= 16;
+                        offset += 16;
+                }
+                if(vecLen < 16 && vecLen >=8) {
+
+                        computeDiff8(&(array1[offset]), &(array2[offset]), &(buffer[offset]));
+                        //computeSquare8(&(buffer[offset]), &(buffer[offset]));
+                        //sum += scalarSum16(&(buffer[offset]), &temp);
+                        vecLen -=8;
+                        offset += 8;
+                }
+        }
+
+        for(int i = 0; i < vecLen; i++) {
+
+                buffer[offset] = (array1[offset] - array2[offset]);
+                ++offset;
+
+        }
+}
+/*
+int main() 
+{
+
+	double a[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0,
+	 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0,
+	 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+
+	double b[39];
+	double c[39];
+
+	printf("%f \n", computeScalarSum(a, 1, 38));
+
+	 computeSquareVec(a, b, 1, 32);
+
+	 computeDiffVec(a, b, c, 1, 32);
+
+	for(int i = 0; i < 39; i++) {
+		printf(" a %f b%f c %f \n", a[i], b[i], c[i]);
+	}
+}*/
