@@ -140,9 +140,11 @@ void spawn_thread(int* subseqlen, double *ts,int ts_len, int subseq_row, int dat
         
     		int ret = pthread_create(&tid[k], NULL, compute_gap_thread, (void*) &param[k]);
         
-        	if(ret) {
+        	while (ret) {
             
             		printf("Pthread creation failed %d\n", ret);
+
+    			ret = pthread_create(&tid[k], NULL, compute_gap_thread, (void*) &param[k]);
         	}
         
         	prev = ts_len - subseqlen[k] +1;
@@ -162,18 +164,18 @@ void spawn_thread(int* subseqlen, double *ts,int ts_len, int subseq_row, int dat
 void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen, char appname[][100], char inputfiles[][100], char *outputname, int input_cluster_no,int start_ts_id)
 {
     
-	int sl;
+	int sl = 0;
 	int iter = 0;
 	int cluster_id[n_sample];
 	//int dataset_A[n_sample];
 	//int dataset_Alen;
-	double *ts;
-	int ts_len;
-	int cnt;
-	int newsize;
-	int k,j,x;
-	int index, index2;
-	double mean, stddev, range;
+	double *ts = NULL;
+	int ts_len = 0;
+	int cnt = 0;
+	int newsize = 0;
+	int k = 0 ,j = 0 ,x = 0;
+	int index = 0 , index2 = 0;
+	double mean = 0.0, stddev = 0.0, range = 0.0;
     
 	if(sLen - LOWER <=0  ) {
         
@@ -221,14 +223,12 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
         
 		fprintf(fp,"************************\n");
 		fprintf(fp, "Iteration %d\n", iter);
-        
-		//printf("%d to %d in steps of %d\n", sLen-LOWER, sLen + UPPER, STEP);
+       
+		/*Find all possible shapelets in the current ts / dataset*/ 
 		for(x=0,sl=sLen-LOWER; sl <= sLen+UPPER && sl <=ts_len; sl+=STEP) {
             
 			if(sl <= ts_len) {
                 		subseq_len[x] = sl;
-         		        //printf("len is %d cnt is %d total till now is %d\n", sl, ts_len-sl, cnt);
-		                //cnt += ts_len - subseq_len[x]+ 1;
                 		cnt += ts_len - sl + 1;
                 		++x;
 			}
@@ -236,28 +236,39 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 				printf("Sl is %d ts_len is %d\n", sl, ts_len);
 			}
 		}
+
+		/*For all possible shapelets declare various storage*/
 		double* p_subseq[cnt];
 		int ps_len[cnt];
 		double gap[cnt];
 		double dt[cnt];
 		int subseq_col[cnt];
+
+		/*keep track of unclustered samples*/
         
 		for (k = 0, j= 0 ; k< n_sample; k++) {
             
 			if(cluster_id[k] == -1)
 				newsize++;
 		}
-        
+       
+		/*Create storage to extract unclustered samples*/ 
 		double* n_dataset[newsize];
 		int n_datalen[newsize];
-		int k,j;
-        
+		int k,j,i;
 		int old_id[newsize];
+		double dist[newsize];
+		int cluster_no = input_cluster_no;
+		/*index of the distance  within threshold*/
+		int dataset_A[newsize];
+		int dataset_Alen = 0;
+
+		/*Clear the mapping array*/
 		memset(old_id, 0, newsize);
-        
+		memset(dataset_A, -1, newsize *sizeof(int));
 		memset(p_subseq, 0, cnt);
+
 		/*create new unclustered data set*/
-        
 		for (k = 0, j= 0 ; k< n_sample; k++) {
             
 			if(cluster_id[k] == -1) {
@@ -272,18 +283,7 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		}
 		
 		
-		double dist[newsize];
-        
-		/*index of the distance  within threshold*/
-		int dataset_A[newsize];
-		int dataset_Alen = 0;
-       
-        
-		memset(dataset_A, -1, newsize *sizeof(int));
-        
-		int cluster_no = input_cluster_no;
-        
-        
+       		/*Spawn threads for each shapelet length - output dt and gap for each of them with the entire dataset*/ 
 		spawn_thread(subseq_len, ts, ts_len, subseq_row, newsize, old_id, dt, gap, cluster_no, subseq_col, p_subseq, ps_len, x);
         
         
@@ -294,7 +294,6 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
         
         
 		/*Add the discriminatory subsequence to the ushapelet list*/
-        
         	printf("Discovered ushapelet gap is %2.2f dt is %2.2f index %d oldrow %d col %d len %d\n", \
 			gap[index], dt[index], index, subseq_row, \
                		subseq_col[index], ps_len[index]);
@@ -307,27 +306,42 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		fprintf(fp, "Application %s\n Dataset path %s\n", appname[subseq_row], inputfiles[subseq_row]);
 		fprintf(fp, "Shapelet row %d col %d len %d\n", ushapelet_row[iter], ushapelet_col[iter], ushapelet_len[iter]);
 
+
+		/*Compute Distance for the selected shapelet with each of the unclustered dataset*/
+
         	int nThreads;
+
+		/*total newsize unclustered dataset*/
         	nThreads  = (newsize / bfactor) + ((newsize % bfactor) > 0) ;
         	int offset = 0;
         	int remainder = newsize;
         	threadInfo threadArg[nThreads];
         	pthread_t idThread[nThreads];
+
+		/*Argument for each of the thread*/
 		struct computeGap_para gap_para;
 
+		/*output distance array*/
 		gap_para.distarray = dist;
+		/*shapelet data*/
         	gap_para.shapelet_row_id = subseq_row;
         	gap_para.shapelet_col_start_id = subseq_col[index];
         	gap_para.shapelet_len = ps_len[index];
+		/*store the original mapping*/
         	gap_para.index_marker = old_id;
-		int i=0;
+
         	int create_result = 1;
         	for (i=0; i<nThreads; i++) {
 
+			/*The start index for the thread's data*/
                 	threadArg[i].start = offset;
+			/*The number of indices for the thread to work on*/
                 	threadArg[i].count = ((bfactor < remainder) ? bfactor : remainder);
-                	threadArg[i].data = &gap_para;
 
+			/*Store the gap struct all the thread's share it?*/
+                	threadArg[i].data = &gap_para;
+			
+			/*Spawn the calcDistThread*/
                 	create_result = pthread_create(&idThread[i], NULL, calcDistThread, &threadArg[i]);
 
 
@@ -337,34 +351,42 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 
                         	create_result = pthread_create(&idThread[i], NULL, calcDistThread, &threadArg[i]);
                 	}
-
+			
+			/*Increase offset by current count and decrement so much from remainder*/
                 	offset +=  threadArg[i].count;
                 	remainder -=  threadArg[i].count;
 
 
         	}
 
+		/*wait for all the threads to exit*/
         	for(i=0; i<nThreads; i++) {
 
                 	pthread_join(idThread[i], NULL);
 
         	}
-		j=0;
-        	for(; i<newsize; i++) {
 
-                	//dist[i] = param[i].distance;
+	//		printf("Set A -> Application %s\n Dataset path %s\n", appname[subseq_row], inputfiles[subseq_row]);
+	//		printf("Set A -> Shapelet row %d col %d len %d\n", ushapelet_row[iter], ushapelet_col[iter], ushapelet_len[iter]);
+		/*Extract dataset A - all the dataset within the computed threshold*/
+        	for(i=0, j=0; i<newsize; i++) {
+
                 	/*If the computed distance is less than threshold then add to Dataset A*/
-                	if (CompareDoubles2(dist[i], dt[index]) <= 0) {
+                	if (CompareDoubles2(dist[i], dt[index]) < 0) {
+
+		//		printf("Set A -> Appname: %s Filename: %s - %f : %f\n", appname[i], inputfiles[i], dist[i], dt[index]);
                         	dataset_A[j] = i;
                         	j++;
                 	}
         	}
-
+		/*Total elements within threshold*/
         	dataset_Alen = j;
 
         
 		
 		printf("Checking for clustering\n");
+		
+		/*Shouldnt we check for mean and std ?*/
         
 		if(clustered(dataset_Alen, newsize)){
             		printf("Too small cluster!");
@@ -376,9 +398,10 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 			index2 = max_index(dist, newsize);
 			ts = n_dataset[index2];
 			ts_len = n_datalen[index2];
-
 			subseq_row = old_id[index2];
-            
+           		
+
+ 
 			printf("Finding next data set is at  index2%d subseqrow%d oldts_len %d ts_len %d\n", index2, subseq_row,ds_len[subseq_row], ts_len );
             
             
@@ -395,11 +418,14 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
             
 			/*Exclude all the dataset within the range by marking it as clustered*/
             
-			for (k = 0, j= 0 ; k< newsize; k++) {
+					
+		//	printf( "Application %s\n Dataset path %s\n", appname[subseq_row], inputfiles[subseq_row]);
+		//	printf("Shapelet row %d col %d len %d\n", ushapelet_row[iter], ushapelet_col[iter], ushapelet_len[iter]);
+			for (k = 0, j= 0 ; k<newsize; k++) {
                 
-				if(CompareDoubles2(dist[k], range) <= 0) {
-					//fprintf(fp, "%s\n", "Clustered dataset\n");
+				if(CompareDoubles2(dist[k], range) < 0) {
 					cluster_id[old_id[k]] = iter;
+		//			printf("Appname: %s Filename: %s - %f : %f\n", appname[old_id[k]], inputfiles[old_id[k]], dist[k], range);
 					fprintf(fp, "Appname: %s Filename: %s\n", appname[old_id[k]], inputfiles[old_id[k]]);
 				}
 			}
