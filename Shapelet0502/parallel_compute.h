@@ -85,4 +85,14 @@ void* computeGap(void* arg_para);
 
 void* calcDistThread(void* arg_para);
 
+
+int computeSquare8(double *inp, double* out);
+int computeSquare16(double *inp, double* out);
+int computeSquare32(double *inp, double* out);
+int computeDiff8(double *inp1, double *inp2, double* out);
+int computeDiff16(double *inp, double *inp2, double* out);
+int computeDiff32(double *inp, double *inp2, double* out);
+double scalarSum8(double *inp1, double* out);
+double scalarSum16(double *inp, double* out);
+double scalarSum32(double *inp, double* out);
 #endif
