@@ -276,6 +276,7 @@ void* computeGap(void* arg_para){
     	free(findMaxGap_para_array);
     	free(dist_array);
     
+    	pthread_mutex_destroy(&lock);
 }
 
 void* findMaxGap(void* arg_para){
@@ -367,9 +368,9 @@ void* findMaxGap(void* arg_para){
             
             //printf("\ntmp_gap: %f tmp_dist: %f +++++",tmp_gap, tmp_dist);
             //printf("\ncluster_a_mean: %f cluster_a_std: %f cluster_b_mean: %f cluster_b_std: %f\n",cluster_a_mean, cluster_a_std, cluster_b_mean, cluster_b_std);
-            for(int k=0;k<index_marker_len;k++){
+//            for(int k=0;k<index_marker_len;k++){
                 //printf("\ndist: %f tmp_dist: %f marker: %d",distance_array[k] ,tmp_dist, data_cluster[k]);
-            }
+  //          }
             
             if ( CompareDoubles2(tmp_gap , *(para->maxGap))>0 ) {
                 
@@ -467,14 +468,8 @@ double* zNormal(int row, int col_start, int col_end){
 
 	mean = computeScalarSum(dataset[row], col_start, array_len);
    	std = computeScalarSum(pow2map[row], col_start, array_len); 
-/*
-    for(int i=col_start; i<=col_end; i++){
-        mean += dataset[row][i];
-        std += pow2map[row][i];
-    }
-  */  
 
-    //normalize the mean
+    	//normalize the mean
 
     	mean = mean / (double) array_len;
     
@@ -484,39 +479,30 @@ double* zNormal(int row, int col_start, int col_end){
 
 	} else {
 
-    	std = sqrt( (std / (double) array_len) - pow(mean , 2.0) );
+	    	std = sqrt( (std / (double) array_len) - pow(mean , 2.0) );
 
    	} 
 
-	    double* z_array = (double*) malloc(sizeof(double)*array_len);
+	double* z_array = (double*) malloc(sizeof(double)*array_len);
 
     	if(CompareDoubles2(std,0.0)==0){
+		
+        	for (int i=0; i<array_len; i++) {
 
-        for (int i=0; i<array_len; i++) {
+            		//calc the z-value
+            		z_array[i] = 0.0;
+        	}
 
-            //calc the z-value
+    	}else{
 
-            z_array[i] = 0.0;
+        	for (int i=0; i<array_len; i++) {
 
-        }
+            	//calc the z-value
+            		z_array[i] = (dataset[row][col_start+i] - mean)/std;
 
+        	}
 
-    }else{
+    	}
 
-    
-
-        for (int i=0; i<array_len; i++) {
-
-            //calc the z-value
-
-            z_array[i] = (dataset[row][col_start+i] - mean)/std;
-
-	           
-
-        }
-
-    }
-
-    return z_array;
-    
+    	return z_array;
 }

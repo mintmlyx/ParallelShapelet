@@ -11,7 +11,7 @@ void compute_mean_stddev(int *dataset_A, int dataset_Alen, double *dist, int new
 	double sum = 0.0, avg = 0.0, dev = 0.0;
 	int i;
     
-    
+ 	/*Discontiguous computation*/  
 	for(i = 0; i < dataset_Alen; i++) {
         
 		sum += dist[dataset_A[i]];
@@ -23,7 +23,7 @@ void compute_mean_stddev(int *dataset_A, int dataset_Alen, double *dist, int new
     
 	for(i=0; i < dataset_Alen; i++) {
         
-        dev += pow((dist[dataset_A[i]] - avg),  2.0);
+        	dev += pow((dist[dataset_A[i]] - avg),  2.0);
         
 	}
     
@@ -104,7 +104,7 @@ void* compute_gap_thread(void* arg)
 
         	computeGap((void*) &para[i]);
         
-        	printf("Computed gap  %f dt %f index %d \n", gap[index], dt[index], index);
+        	//printf("Computed gap  %f dt %f index %d \n", gap[index], dt[index], index);
 	}
 	free(para);
 	pthread_exit(NULL);
@@ -202,9 +202,9 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 	ts_len = ds_len[start_ts_id];
    
     
-	printf("\nextractU_Shapelet %d\n", start_ts_id);
+	//printf("\nextractU_Shapelet %d\n", start_ts_id);
     
-	printf("result: %s\t%s\n",appname[start_ts_id],inputfiles[start_ts_id]);
+	//printf("result: %s\t%s\n",appname[start_ts_id],inputfiles[start_ts_id]);
 	//memset(dataset_A, -1, n_sample *sizeof(int));
 	memset(cluster_id, -1, n_sample *sizeof(int));
     
@@ -213,7 +213,7 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 	int total_subs = ((sLen + UPPER - sLen + LOWER) / STEP) +1;
     	int subseq_len[total_subs];
     
-	printf("TOTAL SUBS = %d \n", total_subs);
+	//printf("TOTAL SUBS = %d \n", total_subs);
     	fprintf(fp, "\n\n\nNew Clustering Batch-------------\n");
     
 	while(1) {
@@ -288,7 +288,7 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
         
         
 		/*Find the subsequence which gives the maximum gap for the dataset*/
-		printf("\nComputing max gap index\n");
+		//printf("\nComputing max gap index\n");
         
 		index = max_index(gap, cnt);
         
@@ -366,15 +366,12 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 
         	}
 
-	//		printf("Set A -> Application %s\n Dataset path %s\n", appname[subseq_row], inputfiles[subseq_row]);
-	//		printf("Set A -> Shapelet row %d col %d len %d\n", ushapelet_row[iter], ushapelet_col[iter], ushapelet_len[iter]);
 		/*Extract dataset A - all the dataset within the computed threshold*/
         	for(i=0, j=0; i<newsize; i++) {
 
                 	/*If the computed distance is less than threshold then add to Dataset A*/
                 	if (CompareDoubles2(dist[i], dt[index]) < 0) {
 
-		//		printf("Set A -> Appname: %s Filename: %s - %f : %f\n", appname[i], inputfiles[i], dist[i], dt[index]);
                         	dataset_A[j] = i;
                         	j++;
                 	}
@@ -384,7 +381,7 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 
         
 		
-		printf("Checking for clustering\n");
+		//printf("Checking for clustering\n");
 		
 		/*Shouldnt we check for mean and std ?*/
         
@@ -402,7 +399,8 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
            		
 
  
-			printf("Finding next data set is at  index2%d subseqrow%d oldts_len %d ts_len %d\n", index2, subseq_row,ds_len[subseq_row], ts_len );
+			printf("Finding next data set is at  index2%d subseqrow%d oldts_len %d ts_len %d\n",
+					 index2, subseq_row,ds_len[subseq_row], ts_len );
             
             
 			mean = 0.0;
@@ -414,18 +412,12 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
             
 			range = mean + stddev;
             
-			//printf("%2.2f is the range mean %2.2f stddev %2.2f \n", range, mean, stddev);
-            
-			/*Exclude all the dataset within the range by marking it as clustered*/
-            
-					
 		//	printf( "Application %s\n Dataset path %s\n", appname[subseq_row], inputfiles[subseq_row]);
 		//	printf("Shapelet row %d col %d len %d\n", ushapelet_row[iter], ushapelet_col[iter], ushapelet_len[iter]);
 			for (k = 0, j= 0 ; k<newsize; k++) {
                 
 				if(CompareDoubles2(dist[k], range) < 0) {
 					cluster_id[old_id[k]] = iter;
-		//			printf("Appname: %s Filename: %s - %f : %f\n", appname[old_id[k]], inputfiles[old_id[k]], dist[k], range);
 					fprintf(fp, "Appname: %s Filename: %s\n", appname[old_id[k]], inputfiles[old_id[k]]);
 				}
 			}
@@ -435,19 +427,19 @@ void extractU_Shapelets(double **pd_Dataset, int* ds_len, int n_sample, int sLen
 		
 	}
     
-   /* 
-     printf("The discovered shapelets are: \n");
-     for ( int z=0; z<=iter; z++) {
+   	/* 
+     		printf("The discovered shapelets are: \n");
+  		   for ( int z=0; z<=iter; z++) {
      
-     printf("start %2.3f len %d row %d col %d\n", *(ushapelet[z]), ushapelet_len[z], ushapelet_row[z], ushapelet_col[z]);
-     }*/
+   			  printf("start %2.3f len %d row %d col %d\n", *(ushapelet[z]), ushapelet_len[z], ushapelet_row[z], ushapelet_col[z]);
+		     }*/
     
-    fprintf(fp,"************************\n");
-    fprintf(fp, "Remaining set\n");
+    	fprintf(fp,"************************\n");
+    	fprintf(fp, "Remaining set\n");
 	for( int z=0; z< n_sample; z++) {
 		
-        if(cluster_id[z]==-1)
-            fprintf(fp, "Appname: %s Filename: %s\n", appname[z], inputfiles[z]);
+        	if(cluster_id[z]==-1)
+            		fprintf(fp, "Appname: %s Filename: %s\n", appname[z], inputfiles[z]);
         
 	}
     

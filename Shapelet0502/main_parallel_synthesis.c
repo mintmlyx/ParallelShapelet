@@ -130,6 +130,9 @@ int main(int argc, char *argv[])
     
     printf("\nStart extractU_shapelet.......");
     char* outputfile = "parallel_synthesis_output.txt";
+    time_t start,end;
+    start = clock();
+
 	for (int i=0; i<set_no; i++) {
         	 extractU_Shapelets(dataset, data_len, set_no, 3, appname, inputfile, outputfile, 3, i);
 	}
@@ -137,7 +140,17 @@ int main(int argc, char *argv[])
     for (int i=0; i<set_no; i++) {
         free(dataset[i]);
     }
+    end = clock();
+
+    long execution_time = (end-start)/CLOCKS_PER_SEC;
+    printf("Execution time: %ld\n", execution_time);
     
     free(data_len);
-    
+    free(dataset);    
+	
+    for(int i =0 ;i<set_no; i++)
+	 free(pow2map[i]);
+    	
+    free(pow2map);
+
 }
