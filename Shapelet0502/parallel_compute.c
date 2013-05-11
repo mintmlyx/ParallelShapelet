@@ -486,21 +486,30 @@ double* zNormal(int row, int col_start, int col_end){
 	double* z_array = (double*) malloc(sizeof(double)*array_len);
 
     	if(CompareDoubles2(std,0.0)==0){
+
+		initVec(z_array, 0.0, array_len);
 		
-        	for (int i=0; i<array_len; i++) {
+/*        	for (int i=0; i<array_len; i++) {
+
 
             		//calc the z-value
             		z_array[i] = 0.0;
         	}
+*/
 
     	}else{
 
-        	for (int i=0; i<array_len; i++) {
+			
+		scalarDiffVec(&(dataset[row][col_start]), mean, z_array, array_len);
+
+		divByScalarVec(z_array, std, array_len);
+
+        	/*for (int i=0; i<array_len; i++) {
 
             	//calc the z-value
             		z_array[i] = (dataset[row][col_start+i] - mean)/std;
 
-        	}
+        	}*/
 
     	}
 

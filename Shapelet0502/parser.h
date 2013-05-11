@@ -8,10 +8,11 @@
 
 #ifndef ParallelComputeGap_parser_h
 #define ParallelComputeGap_parser_h
+
+#define _GNU_SOURCE
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-
 #define LEN 100
 #define NCOLS 7
 typedef unsigned int uint32_t;

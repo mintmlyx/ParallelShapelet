@@ -88,5 +88,9 @@ void* calcDistThread(void* arg_para);
 int computeSquareVec(double *inp, double *out, int from, int len);
 double computeScalarSum(double *inp, int from, int len);
 int computeDiffVec(double *inp, double *inp2, double* out, int from, int len);
+void divByScalarVec(double *source, double factor, int len);
 
+void scalarDiffVec(double *source, double factor, double *dest, int len);
+
+void initVec(double *source, double val, int len);
 #endif
