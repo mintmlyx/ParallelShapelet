@@ -11,9 +11,9 @@
 #include <errno.h>
 #include "parallel_compute.h"
 
-void initVec8(double *inout, double *val) {
+static inline void initVec8(double *inout, double *val) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile ( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
                 "movlpd 0x00(%%rdx), %%xmm0;"
                 "movhpd 0x00(%%rdx), %%xmm0;"
@@ -26,9 +26,9 @@ void initVec8(double *inout, double *val) {
                 : "%rax","%rdx"//,"%rcx"
       	 );
 }
-void initVec16(double *inout, double *val) {
+static inline void initVec16(double *inout, double *val) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile ( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
                 "movlpd 0x00(%%rdx), %%xmm0;"
                 "movhpd 0x00(%%rdx), %%xmm0;"
@@ -46,9 +46,9 @@ void initVec16(double *inout, double *val) {
         );
 }
 
-void initVec32(double *inout, double *val) {
+static inline void initVec32(double *inout, double *val) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile ( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
                 "movlpd 0x00(%%rdx), %%xmm0;"
                 "movhpd 0x00(%%rdx), %%xmm0;"
@@ -73,9 +73,9 @@ void initVec32(double *inout, double *val) {
                 : "%rax","%rdx"//, "%rcx"
         );
 }
-void divByScalarV8(double *inout, double *factor) {
+static inline void divByScalarV8(double *inout, double *factor) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile ( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
 		//"mov %2, %%rcx;"
                 "movlpd 0x00(%%rdx), %%xmm15;"
@@ -97,9 +97,9 @@ void divByScalarV8(double *inout, double *factor) {
                 : "%rax","%rdx"//,"%rcx"
       	 );
 }
-void divByScalarV16(double *inout, double *factor) {
+static inline void divByScalarV16(double *inout, double *factor) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
 		//"mov %2, %%rcx;"
                 "movlpd 0x00(%%rdx), %%xmm15;"
@@ -134,9 +134,9 @@ void divByScalarV16(double *inout, double *factor) {
         );
 }
 
-void divByScalarV32(double *inout, double *factor) {
+static inline void divByScalarV32(double *inout, double *factor) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile ( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
 		//"mov %2, %%rcx;"
                 "movlpd 0x00(%%rdx), %%xmm15;"
@@ -194,9 +194,9 @@ void divByScalarV32(double *inout, double *factor) {
                 : "%rax","%rdx"//, "%rcx"
         );
 }
-void subScalarfromV8(double *input, double *factor, double *output) {
+static inline void subScalarfromV8(double *input, double *factor, double *output) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile ( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
 		"mov %2, %%rcx;"
                 "movlpd 0x00(%%rdx), %%xmm15;"
@@ -218,9 +218,9 @@ void subScalarfromV8(double *input, double *factor, double *output) {
                 : "%rax","%rdx","%rcx"
       	 );
 }
-void subScalarfromV16(double *input, double *factor, double *output) {
+static inline void subScalarfromV16(double *input, double *factor, double *output) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile ( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
 		"mov %2, %%rcx;"
                 "movlpd 0x00(%%rdx), %%xmm15;"
@@ -255,9 +255,9 @@ void subScalarfromV16(double *input, double *factor, double *output) {
         );
 }
 
-void subScalarfromV32(double *input, double *factor, double *output) {
+static inline void subScalarfromV32(double *input, double *factor, double *output) {
 
-        __asm ( "mov %0, %%rax;"
+        __asm volatile ( "mov %0, %%rax;"
                 "mov %1, %%rdx;"
 		"mov %2, %%rcx;"
                 "movlpd 0x00(%%rdx), %%xmm15;"
@@ -316,10 +316,10 @@ void subScalarfromV32(double *input, double *factor, double *output) {
         );
 }
 
-int computeSquare8(double *input, double *output)
+static inline int computeSquare8(double *input, double *output)
 {
 
-	  __asm ( 	"mov  %0, %%rax;"
+	  __asm volatile ( 	"mov  %0, %%rax;"
 	                "mov  %1, %%rdx;"
                 	"movupd 0x00(%%rax), %%xmm0;"
                 	"movupd 0x10(%%rax), %%xmm1;"
@@ -340,10 +340,10 @@ int computeSquare8(double *input, double *output)
 
 }
 
-int computeSquare16(double *input, double *output)
+static inline int computeSquare16(double *input, double *output)
 {
 
-	  __asm ( 	"mov  %0, %%rax;"
+	  __asm volatile ( 	"mov  %0, %%rax;"
 	                "mov  %1, %%rdx;"
                 	"movupd 0x00(%%rax), %%xmm0;"
                 	"movupd 0x10(%%rax), %%xmm1;"
@@ -375,10 +375,10 @@ int computeSquare16(double *input, double *output)
         );
 }
 
-int computeSquare32(double *input, double *output)
+static inline int computeSquare32(double *input, double *output)
 {
 
-	  __asm ( 	"mov  %0, %%rax;"
+	  __asm volatile ( 	"mov  %0, %%rax;"
 	                "mov  %1, %%rdx;"
                 	"movupd 0x00(%%rax), %%xmm0;"
                 	"movupd 0x10(%%rax), %%xmm1;"
@@ -433,10 +433,10 @@ int computeSquare32(double *input, double *output)
                 : "%rax","%rdx"
         );
 }
-int computeDiff8(double *input1, double *input2, double *output)
+static inline int computeDiff8(double *input1, double *input2, double *output)
 {
 
-          __asm (       "mov  %0, %%rax;"
+          __asm volatile (       "mov  %0, %%rax;"
                         "mov  %1, %%rcx;"
                         "mov  %2, %%rdx;"
                         "movupd 0x00(%%rax), %%xmm0;"
@@ -457,10 +457,10 @@ int computeDiff8(double *input1, double *input2, double *output)
         );
 
 }
-int computeDiff16(double *input1, double *input2, double *output)
+static inline int computeDiff16(double *input1, double *input2, double *output)
 {
 
-          __asm (       "mov  %0, %%rax;"
+          __asm volatile (       "mov  %0, %%rax;"
                         "mov  %1, %%rcx;"
                         "mov  %2, %%rdx;"
                         "movupd 0x00(%%rax), %%xmm0;"
@@ -493,10 +493,10 @@ int computeDiff16(double *input1, double *input2, double *output)
         );
 }
 
-int computeDiff32(double *input1, double* input2, double *output)
+static inline int computeDiff32(double *input1, double* input2, double *output)
 {
 
-	  __asm ( 	"mov  %0, %%rax;"
+	  __asm volatile ( 	"mov  %0, %%rax;"
 	                "mov  %1, %%rcx;"
 	                "mov  %2, %%rdx;"
                 	"movupd 0x00(%%rax), %%xmm0;"
@@ -553,10 +553,10 @@ int computeDiff32(double *input1, double* input2, double *output)
         );
 }
 
-double scalarSum8(double *input, double *out)
+static inline double scalarSum8(double *input, double *out)
 {
 
-          __asm (       "mov  %0, %%rax;"
+          __asm volatile (       "mov  %0, %%rax;"
                         "mov %1, %%rbx;"
                         "movupd 0x00(%%rax), %%xmm0;"
                         "movupd 0x10(%%rax), %%xmm1;"
@@ -575,10 +575,10 @@ double scalarSum8(double *input, double *out)
         return *out;
 }
 
-double scalarSum16(double *input, double *out)
+static inline double scalarSum16(double *input, double *out)
 {
 
-          __asm (       "mov  %0, %%rax;"
+          __asm volatile (       "mov  %0, %%rax;"
                         "mov %1, %%rbx;"
                         "movupd 0x00(%%rax), %%xmm0;"
                         "movupd 0x10(%%rax), %%xmm1;"
@@ -604,10 +604,10 @@ double scalarSum16(double *input, double *out)
 }
 
 /*we can go upto scalarSum64 but this is not reqd now*/
-double scalarSum32(double *input, double *out)
+static inline double scalarSum32(double *input, double *out)
 {
 
-          __asm (       "mov  %0, %%rax;"
+          __asm volatile (       "mov  %0, %%rax;"
                         "mov %1, %%rbx;"
                         "movupd 0x00(%%rax), %%xmm0;"
                         "movupd 0x10(%%rax), %%xmm1;"
